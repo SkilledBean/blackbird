@@ -15,6 +15,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
         points: 0,
         markCount: 0,
         rounds: 0,
+        roundMarks: [],
         log: [],
       };
       return o;
@@ -46,6 +47,8 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
       perPlayer[u] = {
         marks: ns[u].markCount,
         rounds: ns[u].rounds,
+        roundMarks: ns[u].roundMarks || [],
+        mpr: ns[u].rounds ? Math.round((ns[u].markCount / ns[u].rounds) * 100) / 100 : 0,
         pointsScored: ns[u].points,
         darts: ns[u].log,
       };
@@ -66,13 +69,23 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
     const ns = JSON.parse(JSON.stringify(state));
     const me = ns[cur];
 
+    if (!me.roundMarks) me.roundMarks = []; // resumed games saved before per-round tracking
+    let roundMarks = 0;
+
     for (const dt of darts) {
       const before = me.marks[dt.target];
       const after = before + dt.ring;
+      const anyOpen = players.some((o) => o !== cur && ns[o].marks[dt.target] < 3);
       me.marks[dt.target] = after;
-      me.markCount += dt.ring;
       me.log.push({ n: numOf(dt.target), mult: dt.ring });
+      // Standard MPR: hits that advance your close always count; extra hits
+      // count only when they can score (an opponent still has the number open).
+      // Dead darts (everyone closed / no-score variant surplus) count 0.
+      const closingHits = Math.min(after, 3) - Math.min(before, 3);
       const scoringHits = Math.max(0, after - 3) - Math.max(0, before - 3);
+      const liveScoring = variant !== "noscore" && anyOpen ? scoringHits : 0;
+      me.markCount += closingHits + liveScoring;
+      roundMarks += closingHits + liveScoring;
       if (scoringHits > 0) {
         const value = CRICKET_VALUE[dt.target] * scoringHits;
         if (variant === "noscore") {
@@ -82,12 +95,12 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
             if (o !== cur && ns[o].marks[dt.target] < 3) ns[o].points += value;
           });
         } else {
-          const open = players.some((o) => o !== cur && ns[o].marks[dt.target] < 3);
-          if (open) me.points += value;
+          if (anyOpen) me.points += value;
         }
       }
     }
     me.rounds += 1;
+    me.roundMarks.push(roundMarks);
     setState(ns);
     setDarts([]);
 
@@ -131,11 +144,18 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
   const openTargets = X01_TARGETS.filter((t) => state[cur].marks[t] < 3).map(numOf);
   const boardHits = darts.map((d) => ({ n: numOf(d.target), mult: d.ring }));
 
+  const liveMpr = (u) =>
+    state[u].rounds ? (state[u].markCount / state[u].rounds).toFixed(2) : "—";
+  const roundNo = Math.floor(turn / players.length) + 1;
+
   return (
     <div className="fade">
       <div className="between mb-12">
-        <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>
-          Cricket · {variantLabel}
+        <div>
+          <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>
+            Cricket · {variantLabel}
+          </div>
+          <div className="tag" style={{ marginTop: 2 }}>Round {roundNo}</div>
         </div>
         <button className="btn btn-danger" style={{ padding: "7px 12px" }} onClick={onQuit}>
           Quit
@@ -151,6 +171,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
                 <th key={t}>{t}</th>
               ))}
               {variant !== "noscore" && <th>Pts</th>}
+              <th>MPR</th>
             </tr>
           </thead>
           <tbody>
@@ -171,6 +192,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
                     {state[u].points}
                   </td>
                 )}
+                <td className="num" style={{ color: "var(--muted)" }}>{liveMpr(u)}</td>
               </tr>
             ))}
           </tbody>
