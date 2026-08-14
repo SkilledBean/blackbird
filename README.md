@@ -17,7 +17,7 @@ localStorage — Postgres is the single source of truth.
 
 | Loading screen | Loading (dark) | Home |
 |:---:|:---:|:---:|
-| <img src="docs/screenshots/loading-light.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, light theme"> | <img src="docs/screenshots/loading-dark.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, dark theme"> | <img src="docs/screenshots/home.png" width="240" alt="Home view with quick stats and top players"> |
+| <img src="docs/screenshots/loading-light.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, light theme"> | <img src="docs/screenshots/loading-dark.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, dark theme"> | <img src="docs/screenshots/home.png" width="240" alt="Home view with quick stats, games-per-week chart, and top players"> |
 
 | Live cricket (MPR column) | Cricket leaderboard | Game setup |
 |:---:|:---:|:---:|
@@ -37,6 +37,8 @@ localStorage — Postgres is the single source of truth.
 - **Cricket MPR**: live **marks-per-round** for every player while the game is
   being played, per-round mark history saved with each game, career MPR and
   best-game MPR on profiles, and an MPR-over-time chart.
+- **Home dashboard**: player/game/top-average tiles plus a bar chart of
+  games played per week over the last 3 months.
 - **Stats**: win %, 3-dart average (overall and per dart position), highest
   turn, best leg, highest checkout, MPR, average runs, and more.
 - **Elo**: every multi-player game updates a shared Elo rating; the Matchup tab

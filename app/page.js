@@ -263,7 +263,7 @@ export default function Page() {
         )}
 
         {view === "home" && (
-          <Home setView={setView} stats={stats} elo={elo} players={players} gameCount={gameCount} openProfile={openProfile} />
+          <Home setView={setView} stats={stats} elo={elo} players={players} gameCount={gameCount} results={results} openProfile={openProfile} />
         )}
         {view === "setup" && (
           <Setup
