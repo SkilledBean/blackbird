@@ -11,6 +11,22 @@ Everyone signs in with email/password, scores games on their phone, and the
 stats sync instantly for the whole group. No game data is kept in
 localStorage — Postgres is the single source of truth.
 
+## Screenshots
+
+*(Captured on a phone-sized viewport with demo data.)*
+
+| Loading screen | Loading (dark) | Home |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/loading-light.png" width="240" alt="Animated splash loading screen, light theme"> | <img src="docs/screenshots/loading-dark.png" width="240" alt="Animated splash loading screen, dark theme"> | <img src="docs/screenshots/home.png" width="240" alt="Home view with quick stats and top players"> |
+
+| Live cricket (MPR column) | Cricket leaderboard | Game setup |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/cricket-live-mpr.png" width="240" alt="Cricket scoring screen with live MPR per player and round number"> | <img src="docs/screenshots/leaderboard-cricket.png" width="240" alt="Standings sorted by cricket MPR"> | <img src="docs/screenshots/setup.png" width="240" alt="New game setup with cricket variants and player picker"> |
+
+| MPR over time | Cricket profile card |
+|:---:|:---:|
+| <img src="docs/screenshots/profile-mpr-chart.png" width="240" alt="Profile trend charts including cricket MPR over time"> | <img src="docs/screenshots/profile-cricket.png" width="240" alt="Profile cricket card with career MPR, best MPR, and marks by round"> |
+
 ## What it is (at a glance)
 
 - **Games**: X01 with optional double-out, Cricket (3 variants), Baseball
