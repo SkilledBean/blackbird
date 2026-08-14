@@ -60,29 +60,31 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
         <Stat label="Games" value={stats.games} />
       </div>
 
-      <div className="card mb-12">
-        <h3 className="section-title">Elo over time</h3>
-        <LineChart data={timeline.elo} color="var(--accent)" />
-      </div>
-
-      {stats.x01.games > 0 && (
-        <div className="card mb-12">
-          <h3 className="section-title">3-dart average over time</h3>
-          <LineChart data={timeline.avg} color="#3b82f6" decimals={1} />
+      <div className="charts-2col">
+        <div className="card">
+          <h3 className="section-title">Elo over time</h3>
+          <LineChart data={timeline.elo} color="var(--accent)" />
         </div>
-      )}
 
-      <div className="card mb-12">
-        <h3 className="section-title">Win % over time</h3>
-        <LineChart data={timeline.win} color="#16a34a" unit="%" />
-      </div>
+        {stats.x01.games > 0 && (
+          <div className="card">
+            <h3 className="section-title">3-dart average over time</h3>
+            <LineChart data={timeline.avg} color="#3b82f6" decimals={1} />
+          </div>
+        )}
 
-      {stats.cricket.games > 0 && (
-        <div className="card mb-12">
-          <h3 className="section-title">Cricket MPR over time</h3>
-          <LineChart data={timeline.mpr} color="var(--amber)" decimals={2} />
+        <div className="card">
+          <h3 className="section-title">Win % over time</h3>
+          <LineChart data={timeline.win} color="#16a34a" unit="%" />
         </div>
-      )}
+
+        {stats.cricket.games > 0 && (
+          <div className="card">
+            <h3 className="section-title">Cricket MPR over time</h3>
+            <LineChart data={timeline.mpr} color="var(--amber)" decimals={2} />
+          </div>
+        )}
+      </div>
 
       {stats.x01.games > 0 && (
       <div className="card mb-12">

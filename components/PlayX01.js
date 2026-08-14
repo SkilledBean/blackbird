@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { Modal } from "./ui";
 import DartBoard from "./DartBoard";
+import { dartValue, dartLabel } from "@/lib/darts";
 
-const dartValue = (d) => (d.n === 0 ? 0 : d.n === 25 ? 25 * d.mult : d.n * d.mult);
-const dartLabel = (d) =>
-  d.n === 0 ? "Miss" : d.n === 25 ? (d.mult === 2 ? "Bull" : "25") : `${d.mult === 1 ? "S" : d.mult === 2 ? "D" : "T"}${d.n}`;
-
-export default function PlayX01({ game, resume, onProgress, onFinish, onQuit }) {
+export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, castActive }) {
   const { players, config } = game;
   const start = config.startScore;
 
@@ -134,6 +131,7 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit }) 
         </button>
       </div>
 
+      {!castActive && (
       <div
         style={{
           display: "grid",
@@ -173,10 +171,14 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit }) 
           );
         })}
       </div>
+      )}
 
       <div className="card">
         <div className="between" style={{ marginBottom: 8 }}>
-          <span className="tag">{cur} — dart {Math.min(turnDarts.length + 1, 3)} of 3</span>
+          <span className="tag">
+            {cur} — dart {Math.min(turnDarts.length + 1, 3)} of 3
+            {castActive ? ` · ${remaining} left` : ""}
+          </span>
           <span style={{ minHeight: 16, color: "var(--red)", fontSize: "calc(12px * var(--fs))", fontWeight: 600 }}>{msg}</span>
         </div>
 
@@ -219,9 +221,11 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit }) 
           </button>
         </div>
 
-        <div style={{ marginTop: 14 }}>
-          <DartBoard hits={turnDarts} />
-        </div>
+        {!castActive && (
+          <div style={{ marginTop: 14 }}>
+            <DartBoard hits={turnDarts} />
+          </div>
+        )}
       </div>
     </div>
   );

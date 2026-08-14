@@ -6,7 +6,8 @@ import { getPlayers, addPlayer as dbAddPlayer, setPlayerHidden as dbSetPlayerHid
 import { computeStats, eloMapFromPlayers, applyEloUpdate } from "@/lib/stats";
 import { ACCENTS, ADMIN_EMAIL } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
-import { Logo, GearIcon } from "@/components/ui";
+import { makeCastCode, openCastChannel, castAvailable, stripHistory } from "@/lib/cast";
+import { Logo, GearIcon, CastIcon } from "@/components/ui";
 import Auth from "@/components/Auth";
 import Home from "@/components/Home";
 import Setup from "@/components/Setup";
@@ -41,8 +42,65 @@ export default function Page() {
   const [view, setView] = useState("home");
   const [live, setLive] = useState(null);
   const liveProgress = useRef(null);
+
+  // ---- TV casting: broadcast live game state to /tv screens ----
+  const [castCode, setCastCode] = useState(null);
+  const castChannel = useRef(null);
+  const liveGameRef = useRef(null);
+  const castTimer = useRef(null);
+  const lastCastAt = useRef(0);
+
+  const sendCastState = useCallback(() => {
+    if (!castChannel.current || !liveGameRef.current || !liveProgress.current) return;
+    castChannel.current.send("state", {
+      game: liveGameRef.current,
+      snapshot: stripHistory(liveProgress.current),
+    });
+  }, []);
+
   const saveProgress = useCallback((p) => {
     liveProgress.current = p;
+    if (!castChannel.current) return;
+    const wait = Math.max(0, 200 - (Date.now() - lastCastAt.current));
+    if (castTimer.current) clearTimeout(castTimer.current);
+    castTimer.current = setTimeout(() => {
+      lastCastAt.current = Date.now();
+      sendCastState();
+    }, wait);
+  }, [sendCastState]);
+
+  const toggleCast = useCallback(() => {
+    if (castChannel.current) {
+      castChannel.current.send("ended", {});
+      castChannel.current.close();
+      castChannel.current = null;
+      setCastCode(null);
+      return;
+    }
+    const code = makeCastCode();
+    const ch = openCastChannel(code, (event) => {
+      // a late-joining TV asks for state; answer with the live snapshot,
+      // or an explicit "ended" so it knows the code is right but nothing
+      // is being played yet
+      if (event === "hello") {
+        if (liveGameRef.current && liveProgress.current) sendCastState();
+        else castChannel.current && castChannel.current.send("ended", {});
+      }
+    });
+    if (!ch) return;
+    castChannel.current = ch;
+    setCastCode(code);
+  }, [sendCastState]);
+
+  useEffect(() => {
+    liveGameRef.current = live;
+  }, [live]);
+
+  useEffect(() => {
+    return () => {
+      if (castTimer.current) clearTimeout(castTimer.current);
+      if (castChannel.current) castChannel.current.close();
+    };
   }, []);
   const [profileUser, setProfileUser] = useState(null);
   const [notice, setNotice] = useState("");
@@ -143,6 +201,13 @@ export default function Page() {
   }, [refresh]);
 
   const finishMatch = useCallback(async (match) => {
+    // stop any queued state broadcast so it can't land after "finished"
+    // and flip the TV back to a stale live board
+    if (castTimer.current) clearTimeout(castTimer.current);
+    liveProgress.current = null;
+    if (castChannel.current) {
+      castChannel.current.send("finished", { game: liveGameRef.current, winner: match.winner });
+    }
     if (match.players.length >= 2) {
       const winner = match.winner;
       const nextElo = applyEloUpdate(elo, match.players, winner);
@@ -184,8 +249,10 @@ export default function Page() {
   };
 
   const quit = () => {
-    setLive(null);
+    if (castTimer.current) clearTimeout(castTimer.current);
     liveProgress.current = null;
+    if (castChannel.current) castChannel.current.send("ended", {});
+    setLive(null);
     setView("home");
   };
 
@@ -280,9 +347,34 @@ export default function Page() {
             back={() => setView("home")}
           />
         )}
-        {view === "playX01" && live && <PlayX01 game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} />}
-        {view === "playCricket" && live && <PlayCricket game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} />}
-        {view === "playBaseball" && live && <PlayBaseball game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} />}
+        {["playX01", "playCricket", "playBaseball"].includes(view) && live && castAvailable() && (
+          <div className="card pad-sm mb-12" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {castCode ? (
+              <>
+                <CastIcon />
+                <span className="tag" style={{ letterSpacing: 0, textTransform: "none" }}>TV code</span>
+                <span className="num" style={{ fontSize: "calc(17px * var(--fs))", letterSpacing: "0.25em" }}>{castCode}</span>
+                <span className="tag" style={{ flex: 1, letterSpacing: 0, textTransform: "none", textAlign: "right" }}>
+                  open {typeof window !== "undefined" ? window.location.host : ""}/tv
+                </span>
+                <button className="btn" style={{ padding: "6px 12px" }} onClick={toggleCast}>
+                  Stop
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+                onClick={toggleCast}
+              >
+                <CastIcon /> Cast to TV
+              </button>
+            )}
+          </div>
+        )}
+        {view === "playX01" && live && <PlayX01 game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playCricket" && live && <PlayCricket game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playBaseball" && live && <PlayBaseball game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
         {view === "leaderboard" && (
           <Leaderboard usernames={visibleUsernames} stats={stats} elo={elo} openProfile={openProfile} back={() => setView("home")} />
         )}
