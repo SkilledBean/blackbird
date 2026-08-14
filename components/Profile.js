@@ -21,6 +21,17 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
     .slice(-8)
     .reverse();
 
+  // most recent cricket game with per-round marks (recorded from v1.2 on)
+  const lastCricket = results
+    .filter(
+      (r) =>
+        r.username === user &&
+        r.gameType === "cricket" &&
+        Array.isArray(r.stats?.roundMarks) &&
+        r.stats.roundMarks.length > 0
+    )
+    .slice(-1)[0];
+
   const label = (r) => {
     if (r.gameType === "x01") return `${r.config.startScore}`;
     if (r.gameType === "baseball") return "Baseball";
@@ -65,6 +76,11 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
       </div>
 
       <div className="card mb-12">
+        <h3 className="section-title">Cricket MPR over time</h3>
+        <LineChart data={timeline.mpr} color="var(--amber)" decimals={2} />
+      </div>
+
+      <div className="card mb-12">
         <h3 className="section-title">X01</h3>
         <div className="grid-4">
           <Mini label="3-dart avg" value={stats.x01.threeDartAvg.toFixed(1)} />
@@ -84,11 +100,26 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
 
       <div className="card mb-12">
         <h3 className="section-title">Cricket</h3>
-        <div className="grid-3">
+        <div className="grid-4">
           <Mini label="MPR" value={stats.cricket.mpr.toFixed(2)} />
+          <Mini label="Best MPR" value={stats.cricket.bestMpr ? stats.cricket.bestMpr.toFixed(2) : "—"} />
           <Mini label="Win %" value={stats.cricket.winPct.toFixed(0)} />
           <Mini label="Games" value={stats.cricket.games} />
         </div>
+        {lastCricket && (
+          <div style={{ marginTop: 10 }}>
+            <div className="tag" style={{ marginBottom: 6 }}>
+              Last game · MPR {(lastCricket.stats.mpr ?? (lastCricket.stats.rounds ? lastCricket.stats.marks / lastCricket.stats.rounds : 0)).toFixed(2)} · marks by round
+            </div>
+            <div className="flex-wrap">
+              {lastCricket.stats.roundMarks.map((m, i) => (
+                <span key={i} className="chip" style={{ padding: "4px 9px", fontSize: "calc(12px * var(--fs))" }}>
+                  R{i + 1}: {m}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="card mb-12">

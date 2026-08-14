@@ -23,6 +23,7 @@ function playerRow(u, stats, elo) {
     highestCheckout: s.x01.highestCheckout,
     highestTurn: s.x01.highestTurn,
     cricketMPR: round(s.cricket.mpr, 2),
+    cricketBestMPR: round(s.cricket.bestMpr, 2),
     cricketRecord: `${s.cricket.wins}-${s.cricket.games - s.cricket.wins}`,
   };
 }
