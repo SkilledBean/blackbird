@@ -580,13 +580,19 @@ label.check input {
   animation: load-up 0.5s 0.1s ease both;
 }
 .load-spinner {
-  width: 42px;
-  height: 42px;
+  width: 54px;
+  height: 54px;
   margin-top: 30px;
-  border-radius: 50%;
-  border: 3.5px solid var(--line-strong);
-  border-top-color: var(--accent);
-  animation: load-up 0.5s 0.2s ease both, load-spin 0.9s linear infinite;
+  display: block;
+  animation: load-fade 0.5s 0.2s ease both, load-spin 1.4s linear infinite;
+}
+@keyframes load-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .load-status {
   margin-top: 16px;

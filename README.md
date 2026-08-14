@@ -17,7 +17,7 @@ localStorage — Postgres is the single source of truth.
 
 | Loading screen | Loading (dark) | Home |
 |:---:|:---:|:---:|
-| <img src="docs/screenshots/loading-light.png" width="240" alt="Blackbird splash: wordmark with loading wheel, light theme"> | <img src="docs/screenshots/loading-dark.png" width="240" alt="Blackbird splash: wordmark with loading wheel, dark theme"> | <img src="docs/screenshots/home.png" width="240" alt="Home view with quick stats and top players"> |
+| <img src="docs/screenshots/loading-light.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, light theme"> | <img src="docs/screenshots/loading-dark.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, dark theme"> | <img src="docs/screenshots/home.png" width="240" alt="Home view with quick stats and top players"> |
 
 | Live cricket (MPR column) | Cricket leaderboard | Game setup |
 |:---:|:---:|:---:|
@@ -30,7 +30,8 @@ localStorage — Postgres is the single source of truth.
 ## What it is (at a glance)
 
 - **Launch splash**: every open starts with the Blackbird wordmark and a
-  loading wheel, held for 1–3 seconds, in the user's light or dark theme.
+  spinning mini dartboard (flat vector) as the loading wheel, held for 1–3
+  seconds, in the user's light or dark theme.
 - **Games**: X01 with optional double-out, Cricket (3 variants), Baseball
   (9 innings + extra innings on ties).
 - **Cricket MPR**: live **marks-per-round** for every player while the game is
@@ -98,8 +99,8 @@ Key design points:
 ## How the app works
 
 1. **Open the app** — a branded splash (the Blackbird wordmark with a
-   loading wheel) shows for 1–3 seconds on every launch while auth and data
-   load behind it.
+   spinning mini dartboard as the loading wheel) shows for 1–3 seconds on
+   every launch while auth and data load behind it.
 2. **Sign in** (Supabase email/password). Your display name is auto-added to
    the shared `players` list so everyone can pick you as an opponent.
 3. **Setup** a game: pick the game type and options (start score + double-out
