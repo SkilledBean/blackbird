@@ -65,21 +65,26 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
         <LineChart data={timeline.elo} color="var(--accent)" />
       </div>
 
-      <div className="card mb-12">
-        <h3 className="section-title">3-dart average over time</h3>
-        <LineChart data={timeline.avg} color="#3b82f6" decimals={1} />
-      </div>
+      {stats.x01.games > 0 && (
+        <div className="card mb-12">
+          <h3 className="section-title">3-dart average over time</h3>
+          <LineChart data={timeline.avg} color="#3b82f6" decimals={1} />
+        </div>
+      )}
 
       <div className="card mb-12">
         <h3 className="section-title">Win % over time</h3>
         <LineChart data={timeline.win} color="#16a34a" unit="%" />
       </div>
 
-      <div className="card mb-12">
-        <h3 className="section-title">Cricket MPR over time</h3>
-        <LineChart data={timeline.mpr} color="var(--amber)" decimals={2} />
-      </div>
+      {stats.cricket.games > 0 && (
+        <div className="card mb-12">
+          <h3 className="section-title">Cricket MPR over time</h3>
+          <LineChart data={timeline.mpr} color="var(--amber)" decimals={2} />
+        </div>
+      )}
 
+      {stats.x01.games > 0 && (
       <div className="card mb-12">
         <h3 className="section-title">X01</h3>
         <div className="grid-4">
@@ -97,7 +102,9 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
           {stats.x01.wins}-{stats.x01.games - stats.x01.wins} record
         </div>
       </div>
+      )}
 
+      {stats.cricket.games > 0 && (
       <div className="card mb-12">
         <h3 className="section-title">Cricket</h3>
         <div className="grid-4">
@@ -121,7 +128,9 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
           </div>
         )}
       </div>
+      )}
 
+      {stats.baseball.games > 0 && (
       <div className="card mb-12">
         <h3 className="section-title">Baseball</h3>
         <div className="grid-3">
@@ -130,6 +139,7 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
           <Mini label="Games" value={stats.baseball.games} />
         </div>
       </div>
+      )}
 
       <div className="card">
         <h3 className="section-title">Recent</h3>

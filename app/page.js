@@ -19,6 +19,7 @@ import Matchup from "@/components/Matchup";
 import Insights from "@/components/Insights";
 import Account from "@/components/Account";
 import Admin from "@/components/Admin";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Page() {
   const [authReady, setAuthReady] = useState(false);
@@ -322,16 +323,6 @@ export default function Page() {
         <button className={`navbtn ${view === "matchup" ? "active" : ""}`} onClick={() => setView("matchup")}>Matchup</button>
         <button className={`navbtn ${view === "insights" ? "active" : ""}`} onClick={() => setView("insights")}>AI</button>
       </nav>
-    </main>
-  );
-}
-
-function LoadingScreen({ text }) {
-  return (
-    <main className="app">
-      <div className="container" style={{ textAlign: "center", paddingTop: 90 }}>
-        <div className="num" style={{ fontSize: "calc(26px * var(--fs))", color: "var(--muted)" }}>{text}</div>
-      </div>
     </main>
   );
 }

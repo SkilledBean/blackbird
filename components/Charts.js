@@ -29,6 +29,10 @@ export function LineChart({ data, color = "var(--accent)", unit = "", decimals =
   const padY = (maxY - minY) * 0.15;
   minY -= padY;
   maxY += padY;
+  if (unit === "%") {
+    minY = Math.max(0, minY);
+    maxY = Math.min(100, maxY);
+  }
 
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
