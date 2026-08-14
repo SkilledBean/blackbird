@@ -874,3 +874,38 @@ label.check input {
   font-weight: 800;
   letter-spacing: 0.25em;
 }
+
+/* tv: scoreboard + live dartboard side by side */
+.tv-split {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr minmax(240px, 30vw);
+  gap: 3vw;
+  align-items: center;
+  min-height: 0;
+}
+.tv-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2.2vw;
+  min-width: 0;
+}
+.tv-boardwrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tv-boardwrap svg {
+  width: 100%;
+  height: auto;
+  max-height: 78vh;
+}
+/* portrait / narrow screens: board tucks under the scoreboard */
+@media (max-aspect-ratio: 1/1) {
+  .tv-split {
+    grid-template-columns: 1fr;
+  }
+  .tv-boardwrap svg {
+    max-width: 60vw;
+  }
+}
