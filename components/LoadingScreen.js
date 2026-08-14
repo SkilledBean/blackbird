@@ -11,24 +11,21 @@ function sector(rI, rO, a0, a1) {
   return `M${x0} ${y0} A${rO} ${rO} 0 0 1 ${x1} ${y1} L${x2} ${y2} A${rI} ${rI} 0 0 0 ${x3} ${y3} Z`;
 }
 
-// flat mini dartboard: 20 alternating wedges + double/triple rings + bull
+// simple 8-section board: every other 45° wedge filled, single color
 const WEDGES = [];
-for (let i = 0; i < 20; i++) {
-  const c = -90 + i * 18;
-  const a0 = c - 9;
-  const a1 = c + 9;
-  const dark = i % 2 === 0;
-  WEDGES.push({ key: `s${i}`, d: sector(16, 100, a0, a1), fill: dark ? "#20242a" : "#efe9d8" });
-  WEDGES.push({ key: `d${i}`, d: sector(84, 100, a0, a1), fill: dark ? "#2c9a60" : "#e03a3a" });
-  WEDGES.push({ key: `t${i}`, d: sector(50, 62, a0, a1), fill: dark ? "#2c9a60" : "#e03a3a" });
+for (let i = 0; i < 8; i++) {
+  if (i % 2 === 0) continue;
+  const c = -90 + i * 45;
+  WEDGES.push(sector(20, 84, c - 22.5, c + 22.5));
 }
 
 /**
  * Splash shown on every app open: the Blackbird wordmark with a spinning
- * mini dartboard as the loading wheel. page.js keeps this up for 1–3
- * seconds per open (plus however long auth/data actually take) so
- * launching always has a moment of perceived loading. Honors
- * prefers-reduced-motion.
+ * mini dartboard as the loading wheel — a flat 8-section board drawn in a
+ * single color that follows the theme (dark ink on light, light ink on
+ * dark). page.js keeps this up for 1–3 seconds per open (plus however
+ * long auth/data actually take) so launching always has a moment of
+ * perceived loading. Honors prefers-reduced-motion.
  */
 export default function LoadingScreen({ text = "loading…" }) {
   return (
@@ -36,13 +33,12 @@ export default function LoadingScreen({ text = "loading…" }) {
       <div className="load-wrap">
         <div className="load-title">Blackbird</div>
         <div className="load-sub">dart scoring system</div>
-        <svg className="load-spinner" viewBox="-3 -3 206 206" aria-hidden="true">
-          <circle cx={100} cy={100} r={102} fill="#181a1f" />
-          {WEDGES.map((w) => (
-            <path key={w.key} d={w.d} fill={w.fill} />
+        <svg className="load-spinner" viewBox="-4 -4 208 208" aria-hidden="true">
+          <circle cx={100} cy={100} r={96} fill="none" stroke="currentColor" strokeWidth="8" />
+          {WEDGES.map((d, i) => (
+            <path key={i} d={d} fill="currentColor" />
           ))}
-          <circle cx={100} cy={100} r={17} fill="#2c9a60" />
-          <circle cx={100} cy={100} r={8} fill="#e03a3a" />
+          <circle cx={100} cy={100} r={11} fill="currentColor" />
         </svg>
         <div className="load-status" role="status">
           {text}

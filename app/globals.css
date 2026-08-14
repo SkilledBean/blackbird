@@ -584,6 +584,7 @@ label.check input {
   height: 54px;
   margin-top: 30px;
   display: block;
+  color: var(--ink);
   animation: load-fade 0.5s 0.2s ease both, load-spin 1.4s linear infinite;
 }
 @keyframes load-fade {
