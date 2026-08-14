@@ -25,6 +25,14 @@ export default function Page() {
   const [authReady, setAuthReady] = useState(false);
   const [session, setSession] = useState(null);
 
+  // Branded splash: hold the loading screen 1–3 s on every open so the app
+  // always launches with a moment of perceived loading.
+  const [splashDone, setSplashDone] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSplashDone(true), 1000 + Math.random() * 2000);
+    return () => clearTimeout(t);
+  }, []);
+
   const [dataReady, setDataReady] = useState(false);
   const [players, setPlayers] = useState([]);
   const [results, setResults] = useState([]);
@@ -201,7 +209,7 @@ export default function Page() {
     );
   }
 
-  if (!authReady) return <LoadingScreen text="starting up…" />;
+  if (!authReady || !splashDone) return <LoadingScreen text="starting up…" />;
   if (!session) return <Auth />;
   if (!dataReady) return <LoadingScreen text="loading…" />;
 
