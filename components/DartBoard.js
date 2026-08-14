@@ -30,10 +30,23 @@ export default function DartBoard({ highlight = [], hits = [], size = 220 }) {
     wedges.push(<path key={`t${i}`} d={sector(54, 62, a0, a1)} fill={dark ? "#2c9a60" : "#e03a3a"} />);
   }
 
+  // open sectors get a faint tint + crisp outline (a heavy fill reads as
+  // a solid mask when several adjacent numbers are open, e.g. cricket)
   const hi = [];
   highlight.forEach((n, idx) => {
     if (n === 25) {
-      hi.push(<circle key={`hi${idx}`} cx={100} cy={100} r={16} fill="var(--accent)" opacity="0.5" />);
+      hi.push(
+        <circle
+          key={`hi${idx}`}
+          cx={100}
+          cy={100}
+          r={19}
+          fill="var(--accent)"
+          fillOpacity="0.12"
+          stroke="var(--accent)"
+          strokeWidth="2.5"
+        />
+      );
       return;
     }
     const i = ORDER.indexOf(n);
@@ -44,9 +57,10 @@ export default function DartBoard({ highlight = [], hits = [], size = 220 }) {
         key={`hi${idx}`}
         d={sector(16, 100, c - 9, c + 9)}
         fill="var(--accent)"
-        opacity="0.45"
+        fillOpacity="0.12"
         stroke="var(--accent)"
-        strokeWidth="2"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
       />
     );
   });
@@ -54,16 +68,17 @@ export default function DartBoard({ highlight = [], hits = [], size = 220 }) {
   const labels = ORDER.map((n, i) => {
     const c = -90 + i * 18;
     const [x, y] = pt(112, c);
+    const open = highlight.includes(n);
     return (
       <text
         key={`l${n}`}
         x={x}
         y={y}
         fontSize="11"
-        fontWeight="700"
+        fontWeight={open ? "800" : "700"}
         textAnchor="middle"
         dominantBaseline="central"
-        fill="var(--ink)"
+        fill={open ? "var(--accent)" : "var(--ink)"}
       >
         {n}
       </text>
