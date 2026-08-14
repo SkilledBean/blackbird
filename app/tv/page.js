@@ -221,6 +221,7 @@ function TV() {
           <p>Apple TV — AirPlay a Safari window showing this page.</p>
           <p>Smart TV — open this address in the TV browser.</p>
           <p>Chromecast — cast a browser tab showing this page.</p>
+          <p>No TV browser? AirPlay-mirror an iPad or iPhone showing this page.</p>
         </div>
       </div>
     </main>

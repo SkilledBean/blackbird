@@ -102,7 +102,13 @@ The `/tv` page will show these three one-line instructions on its idle screen.
 29. **Notifications** — "Sam just beat your best MPR" via web push (needs service worker from #25).
 30. **Multi-league support** — `leagues` table + membership; RLS scoping per league (bigger lift; only if the app grows beyond one friend group).
 31. **Match photos/notes** — attach a note or photo to a game night (Supabase Storage).
-32. **Undo/edit past games (admin)** — admin route already exists; add "delete/fix a game_result" action with Elo replay (replay logic exists in `stats.js: replayMatchesToResults`).
+32. **Native tvOS app** — for browserless Apple TVs: a SwiftUI app that
+   subscribes to the same Supabase Realtime cast channel and renders the
+   scoreboard natively (tvOS has no browser/web view, so this is the only
+   no-second-device option). Needs an Apple Developer account and
+   TestFlight/App Store distribution. Until then: AirPlay-mirror an
+   iPad/iPhone/Mac showing /tv, or add a cheap Fire TV/Chromecast stick.
+33. **Undo/edit past games (admin)** — admin route already exists; add "delete/fix a game_result" action with Elo replay (replay logic exists in `stats.js: replayMatchesToResults`).
 
 ### E. AI insights upgrades
 33. **Post-game AI recap** — one-tap "summarize tonight" using existing insights route.
