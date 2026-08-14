@@ -127,8 +127,11 @@ Key design points:
    for cricket, giant remaining scores for X01, the box score for
    baseball, whose throw it is, and the darts of the current turn — and
    the phone collapses to a simplified entry-only UI. Multiple TVs can
-   join the same code; the code stays active across games until you tap
-   Stop. Sync runs over Supabase Realtime broadcast (no login needed on
+   join the same code; the code stays active across games, and tapping
+   Stop on the phone sends every TV back to its code-entry screen. A
+   hide/show board toggle on the TV switches between the scoreboard-
+   plus-dartboard layout and a score-only view with extra-large numbers
+   (remembered per TV). Sync runs over Supabase Realtime broadcast (no login needed on
    the TV, nothing written to the database).
 5. **Score the game** on the live screen. Cricket shows the classic marks
    grid, points, a **live MPR column**, and the current **round number**;

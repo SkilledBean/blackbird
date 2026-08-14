@@ -36,6 +36,24 @@ function TV() {
   const channel = useRef(null);
   const helloTimer = useRef(null);
 
+  // display style: "board" (scoreboard + dartboard) or "score" (score
+  // only, extra large). Remembered per TV.
+  const [displayMode, setDisplayMode] = useState("board");
+  useEffect(() => {
+    try {
+      const v = window.localStorage.getItem("bb-tv-display");
+      if (v === "score" || v === "board") setDisplayMode(v);
+    } catch {}
+  }, []);
+  const toggleDisplay = () =>
+    setDisplayMode((m) => {
+      const next = m === "board" ? "score" : "board";
+      try {
+        window.localStorage.setItem("bb-tv-display", next);
+      } catch {}
+      return next;
+    });
+
   // TVs always render the dark theme
   useEffect(() => {
     document.documentElement.dataset.theme = "dark";
@@ -69,6 +87,13 @@ function TV() {
         } else if (event === "ended") {
           setStatus("waiting");
           setSnapshot(null);
+        } else if (event === "stopped") {
+          // the phone stopped casting — back to the code-entry screen
+          if (channel.current) channel.current.close();
+          channel.current = null;
+          setGame(null);
+          setSnapshot(null);
+          setStatus("idle");
         }
       },
       () => {
@@ -102,9 +127,14 @@ function TV() {
 
   if (status === "live" && game && snapshot) {
     return (
-      <main className="tv">
+      <main className={`tv ${displayMode === "score" ? "tv-scoreonly" : ""}`}>
         <TVScoreboard game={game} snapshot={snapshot} />
-        <div className="tv-footer">Blackbird · code {code}</div>
+        <div className="tv-footer">
+          <span>Blackbird · code {code}</span>
+          <button className="tv-style-btn" onClick={toggleDisplay}>
+            {displayMode === "board" ? "hide board" : "show board"}
+          </button>
+        </div>
       </main>
     );
   }

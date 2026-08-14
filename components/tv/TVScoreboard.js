@@ -1,8 +1,7 @@
 import { X01_TARGETS, BASEBALL_INNINGS } from "@/lib/constants";
-import { dartValue, dartLabel, markSymbol } from "@/lib/darts";
+import { dartValue, markSymbol } from "@/lib/darts";
 import DartBoard from "@/components/DartBoard";
 
-const ringLabel = (d) => `${d.ring === 1 ? "S" : d.ring === 2 ? "D" : "T"}${d.target}`;
 const numOf = (t) => (t === "B" ? 25 : Number(t));
 
 /**
@@ -71,11 +70,6 @@ function TVCricket({ game, snapshot }) {
               ))}
             </tbody>
           </table>
-          <TVTurnStrip
-            cur={cur}
-            darts={darts.map(ringLabel)}
-            hint={darts.length ? "" : "throwing…"}
-          />
         </div>
         <div className="tv-boardwrap">
           <DartBoard highlight={openTargets} hits={boardHits} />
@@ -119,11 +113,6 @@ function TVX01({ game, snapshot }) {
               );
             })}
           </div>
-          <TVTurnStrip
-            cur={cur}
-            darts={turnDarts.map(dartLabel)}
-            hint={turnDarts.length ? `${turnSum} this turn` : "throwing…"}
-          />
         </div>
         <div className="tv-boardwrap">
           <DartBoard hits={turnDarts} />
@@ -178,11 +167,6 @@ function TVBaseball({ game, snapshot }) {
               ))}
             </tbody>
           </table>
-          <TVTurnStrip
-            cur={cur}
-            darts={turnDarts.map(dartLabel)}
-            hint={turnDarts.length ? "" : "throwing…"}
-          />
         </div>
         <div className="tv-boardwrap">
           <DartBoard highlight={[target]} hits={turnDarts} />
@@ -201,18 +185,3 @@ function TVHeader({ left, right, rightColor }) {
   );
 }
 
-function TVTurnStrip({ cur, darts, hint }) {
-  return (
-    <div className="tv-turn">
-      <span className="tv-turn-name">{cur}</span>
-      <span className="tv-turn-darts">
-        {darts.map((d, i) => (
-          <span key={i} className="tv-dart">
-            {d}
-          </span>
-        ))}
-        {hint && <span className="tv-muted">{hint}</span>}
-      </span>
-    </div>
-  );
-}

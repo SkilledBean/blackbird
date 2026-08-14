@@ -71,7 +71,8 @@ export default function Page() {
 
   const toggleCast = useCallback(() => {
     if (castChannel.current) {
-      castChannel.current.send("ended", {});
+      // "stopped" (not "ended") sends TVs back to their code-entry screen
+      castChannel.current.send("stopped", {});
       castChannel.current.close();
       castChannel.current = null;
       setCastCode(null);
