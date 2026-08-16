@@ -52,7 +52,7 @@ The `/tv` page will show these three one-line instructions on its idle screen.
 **Simplified phone UI while casting**
 - Play components get a `castActive` prop: when true, the scoreboard table and DartBoard collapse (the TV is now the scoreboard) leaving big entry controls — ring selector, target chips, End turn/Undo. ~20 lines per play component, purely conditional rendering; scoring logic untouched.
 
-**Edge cases**: hide the Cast button when `supabase` is null; close channels on quit/finish/unmount; multiple TVs on one code just work (broadcast fan-out); phone page refresh still loses the live game (existing app limitation — roadmap item #24 fixes it and would make TV reconnects bulletproof).
+**Edge cases**: hide the Cast button when `supabase` is null; close channels on quit/finish/unmount; multiple TVs on one code just work (broadcast fan-out); a phone page refresh restores the live game from localStorage (item #24, done in v1.4).
 
 **Scope estimate**: ~550–650 new lines. No SQL, no new dependencies.
 
@@ -92,7 +92,7 @@ The `/tv` page will show these three one-line instructions on its idle screen.
 21. **Sounds & haptics** — dart thock, bust buzz; `navigator.vibrate` on phones; per-user toggle in Account.
 22. **Voice caller** — Web Speech API announces "Scores 140!" like a match caller; works well with the TV mode.
 23. **Turn timer** (optional) — shot clock for league nights.
-24. **Resume across reload** — persist `liveProgress` to localStorage/Supabase so a page refresh doesn't lose the live game (today it's a `useRef` only).
+24. **Resume across reload** — **done (v1.4)**: live games persist to localStorage (scoped per account) and restore after a page refresh; Supabase-side persistence comes with the Prodigy sync work.
 
 ### D. Product/platform
 25. **PWA completion** — the manifest/icons referenced in `app/layout.js` don't exist (`public/` is missing): add `public/manifest.webmanifest` + icons + `logo.png` so Android install works; optional service worker for offline shell.
@@ -125,13 +125,22 @@ Vercel/Supabase when online. Summary of its delivery phases:
 
 - **Phase 0 — preservation & inventory** (hardware): clone/hash Board A's
   SD card, identify init system, services, display stack, architecture.
+  *Tooling ready (v1.4): `tools/prodigy-inspect.sh` produces the read-only
+  inventory report answering the guide's §36 unknowns — needs the board.*
 - **Phase 1 — read-only protocol logger**: capture the board's
   port-9001 WebSocket protocol (`Dart:`, `Reset:`, `Clarity:`, `Metadata:`)
   with a passive logger; build firmware-pinned fixtures.
+  *Tooling ready (v1.4): `tools/prodigy-logger.mjs` (passive capture) and
+  `lib/prodigy/parser.js` with unit tests — needs the board on the LAN.*
 - **Phase 2 — scoring-core refactor** (pure software, can start now):
   extract the X01/cricket/baseball rules into a pure event-sourced reducer
   package shared by manual UI, hardware input, and replay; make live web
   games recoverable across reloads.
+  *Done (v1.4): `packages/scoring-core` ships the pure reducer, proven
+  equivalent to the play components by app-captured conformance fixtures
+  (`npm test`), and live games now survive page reloads. The play
+  components keep their in-file engines until the hardware-adapter phase;
+  the conformance suite keeps the two in lockstep.*
 - **Phase 3 — board daemon + SQLite**: local event log, outbox,
   snapshots, IPC; survives power loss.
 - **Phase 4 — on-board Qt/QML UI**: full-screen HDMI scorer that boots

@@ -246,6 +246,7 @@ Model names drift; if a default ever errors, set `AI_MODEL` to a current one.
 cp .env.example .env.local   # fill in Supabase values + AI_PROVIDER + the key
 npm install
 npm run dev                  # http://localhost:3000
+npm test                     # scoring-core + parser + conformance suite
 ```
 
 ## 5. Deploy to Vercel
@@ -319,6 +320,13 @@ lib/
   stats.js                Elo math, career stats, timelines, head-to-head
   constants.js            targets, cricket values, Elo constants, accents
   prefs.js                font-scale preference
+  prodigy/parser.js       Prodigy D9000W board protocol parser
+packages/
+  scoring-core/           pure event-sourced scoring reducer (x01,
+                          cricket, baseball) for the hardware bridge
+tests/                    node --test suite: reducer units, parser units,
+                          app-vs-reducer conformance fixtures (npm test)
+tools/                    Prodigy capture/inventory scripts (see tools/README.md)
 supabase/
   schema.sql              run once in the Supabase SQL editor
   migration-*.sql         historical one-off migrations (already applied)

@@ -1,0 +1,8 @@
+{
+  "name": "@blackbird/scoring-core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "description": "Pure event-sourced dart scoring rules (X01, Cricket, Baseball) shared by the Blackbird web UI, the Prodigy board bridge, and replay/recovery. No React, DOM, network, clock, or randomness."
+}

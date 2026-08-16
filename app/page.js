@@ -44,6 +44,30 @@ export default function Page() {
   const [live, setLive] = useState(null);
   const liveProgress = useRef(null);
 
+  // ---- live-game persistence: a page reload no longer loses the leg ----
+  // Scoped to the signed-in account (a shared device never hands one
+  // user's game to another). The undo history is stripped before writing:
+  // it grows quadratically and in-session resume keeps it in memory.
+  const LIVE_KEY = "bb-live-game";
+  const sessionUserIdRef = useRef(null);
+  // true from finishMatch/quit until the next game starts; blocks the play
+  // component's trailing onProgress (fired while finishMatch awaits the
+  // network) from resurrecting the cleared key or re-arming the cast timer
+  const finishingRef = useRef(false);
+  const restoredForUser = useRef(null);
+
+  const persistLive = useCallback((game, progress) => {
+    const uid = sessionUserIdRef.current;
+    if (!uid) return;
+    try {
+      if (game) {
+        window.localStorage.setItem(LIVE_KEY, JSON.stringify({ userId: uid, game, progress: stripHistory(progress) }));
+      } else {
+        window.localStorage.removeItem(LIVE_KEY);
+      }
+    } catch {}
+  }, []);
+
   // ---- TV casting: broadcast live game state to /tv screens ----
   const [castCode, setCastCode] = useState(null);
   const castChannel = useRef(null);
@@ -60,7 +84,9 @@ export default function Page() {
   }, []);
 
   const saveProgress = useCallback((p) => {
+    if (finishingRef.current) return; // trailing update after finish/quit
     liveProgress.current = p;
+    persistLive(liveGameRef.current, p);
     if (!castChannel.current) return;
     const wait = Math.max(0, 200 - (Date.now() - lastCastAt.current));
     if (castTimer.current) clearTimeout(castTimer.current);
@@ -68,7 +94,7 @@ export default function Page() {
       lastCastAt.current = Date.now();
       sendCastState();
     }, wait);
-  }, [sendCastState]);
+  }, [sendCastState, persistLive]);
 
   const toggleCast = useCallback(() => {
     if (castChannel.current) {
@@ -119,6 +145,30 @@ export default function Page() {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    sessionUserIdRef.current = session?.user?.id || null;
+  }, [session]);
+
+  // restore a persisted live game for THIS account, once per sign-in
+  useEffect(() => {
+    const uid = session?.user?.id;
+    if (!uid || live || restoredForUser.current === uid) return;
+    restoredForUser.current = uid;
+    try {
+      const raw = window.localStorage.getItem(LIVE_KEY);
+      if (!raw) return;
+      const { userId, game, progress } = JSON.parse(raw);
+      if (userId !== uid) return; // someone else's leg on a shared device
+      if (game && game.gameType && Array.isArray(game.players)) {
+        liveProgress.current = progress || null;
+        liveGameRef.current = game;
+        setLive(game);
+        setNotice("Live game restored — open Play to continue.");
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, live]);
 
   // apply theme + accent color from the user's saved preferences
   useEffect(() => {
@@ -210,10 +260,13 @@ export default function Page() {
   }, [refresh]);
 
   const finishMatch = useCallback(async (match) => {
-    // stop any queued state broadcast so it can't land after "finished"
-    // and flip the TV back to a stale live board
+    // block the play component's trailing onProgress (it re-renders while
+    // we await the network below) from resurrecting the persisted game or
+    // re-arming the cast timer after "finished"
+    finishingRef.current = true;
     if (castTimer.current) clearTimeout(castTimer.current);
     liveProgress.current = null;
+    persistLive(null);
     if (castChannel.current) {
       castChannel.current.send("finished", { game: liveGameRef.current, winner: match.winner });
     }
@@ -258,10 +311,13 @@ export default function Page() {
   };
 
   const quit = () => {
+    finishingRef.current = true;
     if (castTimer.current) clearTimeout(castTimer.current);
     liveProgress.current = null;
+    persistLive(null);
     if (castChannel.current) castChannel.current.send("ended", {});
     setLive(null);
+    setNotice("");
     setView("home");
   };
 
@@ -347,7 +403,12 @@ export default function Page() {
             addPlayer={addPlayer}
             me={session.user?.user_metadata?.display_name || ""}
             onStart={(game) => {
+              finishingRef.current = false;
               liveProgress.current = null;
+              // sync the ref now: the play component's first onProgress fires
+              // before the ref-syncing effect on this same commit
+              liveGameRef.current = game;
+              persistLive(game, null);
               setLive(game);
               setView(
                 game.gameType === "x01" ? "playX01" : game.gameType === "cricket" ? "playCricket" : "playBaseball"

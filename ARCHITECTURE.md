@@ -108,9 +108,27 @@ lib/
   occasions.js            date-triggered splash flourishes
   prefs.js                font-scale preference
   constants.js            targets, cricket values, Elo K, accents…
+  prodigy/parser.js       Prodigy D9000W protocol parser (CRLF line
+                          framing, Dart:/Reset:/Clarity:/Metadata:)
+packages/
+  scoring-core/           pure event-sourced scoring reducer shared by
+                          the web UI (via conformance fixtures today) and
+                          the future Prodigy hardware bridge: x01,
+                          cricket (incl. MPR rule), baseball, serialize/
+                          replay, deriveCompletedResult
+tests/
+  scoring-core.test.mjs   unit tests for the reducer (node --test)
+  prodigy-parser.test.mjs parser unit tests
+  conformance.test.mjs    replays app-captured fixtures through the
+                          reducer and asserts identical results
+  fixtures/               ground-truth game recordings from the real UI
+tools/
+  prodigy-logger.mjs      passive WebSocket capture for the board (lab)
+  prodigy-inspect.sh      read-only SD-image inventory script
 supabase/
   schema.sql              run once: tables + RLS policies
 docs/screenshots/         README images
+docs/prodigy-development-guide.md   hardware integration plan
 ```
 
 There are **four JS dependencies**: `next`, `react`, `react-dom`,
@@ -404,24 +422,45 @@ resets, and the legacy-match rebuild.
 
 ## 14. Testing & verification approach
 
-There is no committed test suite; the app is verified per-change with a
-Playwright harness (kept outside the repo) that:
+Two layers:
+
+**Committed test suite** (`npm test` → `node --test tests/*.test.mjs`,
+no test-framework dependency):
+
+- `tests/scoring-core.test.mjs` — unit tests for the pure reducer:
+  x01 bust/double-out/checkout, cricket standard/cutthroat/noscore and
+  the MPR rule, baseball innings/extras, undo/abandon semantics,
+  serialize→deserialize round-trips, hardware-event idempotency keys.
+- `tests/prodigy-parser.test.mjs` — protocol parser: CRLF buffering
+  across frames, every observed line type, malformed input never throws.
+- `tests/conformance.test.mjs` — replays `tests/fixtures/conformance.json`
+  (games recorded from the **real UI** by the Playwright harness) through
+  `packages/scoring-core` and asserts the winner and full per-player
+  stats match byte-for-byte. This is the guarantee that the extracted
+  reducer and the shipping play components implement identical rules.
+
+**Per-change browser verification** — a Playwright harness (kept outside
+the repo) that:
 
 - runs the production build locally against a **mocked Supabase** —
   network interception serves canned auth/players/game_results responses,
   and a forged localStorage session skips login;
 - drives real flows (score cricket turns, cast to a TV page over the
-  `BroadcastChannel` transport, join by code, toggle display styles) and
-  asserts on-screen values (e.g. live MPR arithmetic);
-- captures the phone/tablet/TV screenshots used in the README.
+  `BroadcastChannel` transport, join by code, toggle display styles,
+  reload mid-game and assert the live game restores) and asserts
+  on-screen values (e.g. live MPR arithmetic);
+- regenerates the conformance fixtures and captures the phone/tablet/TV
+  screenshots used in the README.
 
 The only path this can't exercise is production Supabase Realtime
 websockets — that gets a manual smoke test after deploy.
 
 ## 15. Known limitations (accepted tradeoffs)
 
-- Live game state is in-memory: a phone reload mid-game loses the leg
-  (ROADMAP #24 would persist it and harden TV reconnects).
+- Live game snapshots persist to `localStorage` (scoped to the signed-in
+  account), so a phone reload mid-game restores the leg — but the
+  snapshot is device-local: switching phones mid-game still loses it
+  (server-side persistence arrives with the Prodigy sync work).
 - Full-table reads on load (fine at league scale; see §7).
 - One leg per match; double-out is trusted, not verified.
 - Cast codes are 4 characters and channels are public: a guessed code can
@@ -445,6 +484,12 @@ websockets — that gets a manual smoke test after deploy.
   auto-scoring board itself — local-first SQLite event log, device-token
   ingestion via Vercel, private Realtime — is specified in
   [docs/prodigy-development-guide.md](docs/prodigy-development-guide.md).
-  Its Phase 2 (extracting the scoring rules into a pure event-sourced
-  reducer) is a pure-software refactor of §8 that also fixes the
-  reload-loses-game limitation.
+  Its software-only track is **done**: `packages/scoring-core` is the
+  pure event-sourced reducer (proven equivalent to the play components
+  by the §14 conformance fixtures), `lib/prodigy/parser.js` speaks the
+  board's protocol, `tools/` holds the capture/inventory scripts, and
+  live games now survive reloads. The play components still run their
+  own in-file engines for now — rewiring them onto scoring-core is
+  deliberately deferred to the hardware-adapter phase, with the
+  conformance suite guaranteeing the two stay in lockstep. Next steps
+  need physical board access (SD clone + protocol capture).
