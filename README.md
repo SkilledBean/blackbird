@@ -67,6 +67,10 @@ localStorage — Postgres is the single source of truth.
 
 ## System architecture
 
+*(Deep dive: [ARCHITECTURE.md](ARCHITECTURE.md) documents the whole system
+— boot sequence, data model, game-engine contract, TV cast protocol,
+theming, security — end to end.)*
+
 ```
 ┌─────────────────────────────┐
 │  Phones / browsers (PWA-ish) │  add-to-home-screen web app
