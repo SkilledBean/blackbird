@@ -924,3 +924,198 @@ label.check input {
 .tv-scoreonly .tv-x01-sub {
   font-size: clamp(16px, 2vw, 40px);
 }
+
+/* ============ experimental skins (admin theme lab) ============
+   Full-app looks selectable from the admin panel, stored per-account.
+   Each skin owns the complete palette + component geometry, overriding
+   whatever data-theme is active. Kept last in the file so equal-
+   specificity rules win. */
+
+/* --- Anduril: defense-console. Near-black, squared, monochrome. --- */
+[data-skin="anduril"] {
+  --bg: #08090b;
+  --surface: #0e1114;
+  --surface-2: #14181d;
+  --ink: #e9edf1;
+  --ink-soft: #9aa4ad;
+  --muted: #5f6870;
+  --line: #22282e;
+  --line-strong: #39424a;
+  --accent: #e9edf1;
+  --accent-hover: #c4ccd3;
+  --accent-soft: rgba(233, 237, 241, 0.08);
+  --red: #ff4d3d;
+  --amber: #ffb000;
+  --radius: 2px;
+  --radius-sm: 2px;
+  --shadow: none;
+}
+[data-skin="anduril"] .app {
+  background: var(--bg);
+}
+[data-skin="anduril"] .brand-title {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: calc(20px * var(--fs-chrome));
+  font-weight: 700;
+}
+[data-skin="anduril"] .section-title {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: calc(12px * var(--fs));
+  color: var(--ink-soft);
+}
+[data-skin="anduril"] .tag {
+  letter-spacing: 0.2em;
+}
+[data-skin="anduril"] .btn,
+[data-skin="anduril"] .chip {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: calc(12.5px * var(--fs));
+  font-weight: 700;
+}
+[data-skin="anduril"] .btn-primary,
+[data-skin="anduril"] .btn-amber {
+  color: #08090b;
+}
+[data-skin="anduril"] .btn-toggle-on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #08090b;
+}
+[data-skin="anduril"] .nav {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+[data-skin="anduril"] .navbtn {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: calc(11px * var(--fs-chrome));
+}
+[data-skin="anduril"] .navbtn.active {
+  background: var(--ink);
+  color: #08090b;
+}
+[data-skin="anduril"] .card {
+  box-shadow: none;
+}
+
+/* --- Airbnb: warm, friendly, rounded. White + coral, pill buttons. --- */
+[data-skin="airbnb"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f7f7f7;
+  --ink: #222222;
+  --ink-soft: #6a6a6a;
+  --muted: #b0b0b0;
+  --line: #ebebeb;
+  --line-strong: #dddddd;
+  --accent: #ff385c;
+  --accent-hover: #e31c5f;
+  --accent-soft: rgba(255, 56, 92, 0.09);
+  --red: #c13515;
+  --amber: #ffb400;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 10px 30px rgba(0, 0, 0, 0.08);
+  --font-display-stack: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+[data-skin="airbnb"] .app {
+  background: var(--bg);
+}
+[data-skin="airbnb"] .brand-title {
+  color: var(--accent);
+}
+[data-skin="airbnb"] .card {
+  border-color: transparent;
+}
+[data-skin="airbnb"] .btn {
+  border-radius: 999px;
+}
+[data-skin="airbnb"] .btn-primary {
+  background: linear-gradient(90deg, #e61e4d 0%, #d70466 100%);
+  border-color: transparent;
+}
+[data-skin="airbnb"] .chip {
+  border-radius: 14px;
+}
+[data-skin="airbnb"] .nav {
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+[data-skin="airbnb"] .navbtn {
+  border-radius: 999px;
+}
+[data-skin="airbnb"] .navbtn.active {
+  background: #222222;
+  color: #ffffff;
+}
+[data-skin="airbnb"] .stat,
+[data-skin="airbnb"] .mini {
+  border-color: transparent;
+  background: var(--surface-2);
+}
+
+/* --- Uber: black-and-white utility. Sharp, bold, high contrast. --- */
+[data-skin="uber"] {
+  --bg: #f6f6f6;
+  --surface: #ffffff;
+  --surface-2: #eeeeee;
+  --ink: #000000;
+  --ink-soft: #545454;
+  --muted: #a6a6a6;
+  --line: #e2e2e2;
+  --line-strong: #c9c9c9;
+  --accent: #000000;
+  --accent-hover: #333333;
+  --accent-soft: rgba(0, 0, 0, 0.07);
+  --red: #de1135;
+  --amber: #b28900;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow: none;
+  --font-display-stack: "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body-stack: "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+[data-skin="uber"] .app {
+  background: var(--bg);
+}
+[data-skin="uber"] .brand-title {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+[data-skin="uber"] .section-title {
+  font-weight: 800;
+}
+[data-skin="uber"] .card {
+  box-shadow: none;
+}
+[data-skin="uber"] .btn {
+  border-radius: 8px;
+  font-weight: 700;
+}
+[data-skin="uber"] .btn-primary {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+[data-skin="uber"] .chip {
+  border-radius: 8px;
+  background: var(--surface-2);
+  border-color: transparent;
+}
+[data-skin="uber"] .nav {
+  border-radius: 12px;
+}
+[data-skin="uber"] .navbtn.active {
+  background: #000000;
+  color: #ffffff;
+}

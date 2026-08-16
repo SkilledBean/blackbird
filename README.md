@@ -60,7 +60,8 @@ localStorage — Postgres is the single source of truth.
   your choice (Gemini, Groq, OpenAI, or Anthropic) and answers questions like
   "who has improved the most lately?".
 - **Admin panel**: the configured admin account can manage login accounts,
-  hide/delete players, and reset scores.
+  hide/delete players, reset scores, and try experimental full-app skins
+  (theme lab — applies only to the admin's own account).
 
 ## System architecture
 

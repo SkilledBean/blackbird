@@ -6,6 +6,7 @@ import { getPlayers, addPlayer as dbAddPlayer, setPlayerHidden as dbSetPlayerHid
 import { computeStats, eloMapFromPlayers, applyEloUpdate } from "@/lib/stats";
 import { ACCENTS, ADMIN_EMAIL } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
+import { applySkin } from "@/lib/skins";
 import { makeCastCode, openCastChannel, castAvailable, stripHistory } from "@/lib/cast";
 import { Logo, GearIcon, CastIcon } from "@/components/ui";
 import Auth from "@/components/Auth";
@@ -126,8 +127,15 @@ export default function Page() {
     document.documentElement.dataset.theme = ["dark", "glass"].includes(meta.theme) ? meta.theme : "light";
     const a = meta.accent;
     const accent = a ? (a.charAt(0) === "#" ? a : ACCENTS[a] || ACCENTS.green) : ACCENTS.green;
-    document.documentElement.style.setProperty("--accent", accent);
+    // an active skin owns the whole palette — don't pin the accent inline
+    // over it (inline style would beat the skin's CSS token)
+    if (meta.skin && meta.skin !== "default") {
+      document.documentElement.style.removeProperty("--accent");
+    } else {
+      document.documentElement.style.setProperty("--accent", accent);
+    }
     applyFontScale(meta.fontScale);
+    applySkin(meta.skin);
   }, [session]);
 
   const refresh = useCallback(async () => {
