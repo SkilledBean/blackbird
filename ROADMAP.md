@@ -115,6 +115,36 @@ The `/tv` page will show these three one-line instructions on its idle screen.
 34. **Coaching tips** — feed per-target cricket accuracy + checkout rates for personalized practice suggestions.
 35. **Trash talk generator** — pre-match hype line for the TV screen before a game starts (fits TV mode idle screen).
 
+## Part 3 — Prodigy D9000W hardware integration
+
+The full plan lives in **[docs/prodigy-development-guide.md](docs/prodigy-development-guide.md)**
+(v1.0, Aug 2026): boot Blackbird directly on the Escalade Prodigy D9000W's
+own Linux/Qt system, keep the vendor's camera location engine, score games
+locally with no phone or internet, and sync every event exactly once to
+Vercel/Supabase when online. Summary of its delivery phases:
+
+- **Phase 0 — preservation & inventory** (hardware): clone/hash Board A's
+  SD card, identify init system, services, display stack, architecture.
+- **Phase 1 — read-only protocol logger**: capture the board's
+  port-9001 WebSocket protocol (`Dart:`, `Reset:`, `Clarity:`, `Metadata:`)
+  with a passive logger; build firmware-pinned fixtures.
+- **Phase 2 — scoring-core refactor** (pure software, can start now):
+  extract the X01/cricket/baseball rules into a pure event-sourced reducer
+  package shared by manual UI, hardware input, and replay; make live web
+  games recoverable across reloads.
+- **Phase 3 — board daemon + SQLite**: local event log, outbox,
+  snapshots, IPC; survives power loss.
+- **Phase 4 — on-board Qt/QML UI**: full-screen HDMI scorer that boots
+  instead of the vendor UI, with factory fallback.
+- **Phase 5 — cloud sync**: device-token auth, Vercel ingestion route,
+  ownership-based Supabase schema/RLS, private Realtime, idempotent
+  finalization + Elo.
+- **Phase 6 — hardening**: power/network failure suites, cert pinning,
+  signed updates, Board B comparison.
+
+The guide's §36 lists 20 unknowns that must be read off the real SD card
+before any board installation; nothing is flashed until those are resolved.
+
 ### Suggested build order (rough)
 Per the user, this is a **planning document only for now** — nothing gets built until they pick items from it. Recommended sequence when they do:
 1. TV scoreboard mode (Part 1) — the headline feature.

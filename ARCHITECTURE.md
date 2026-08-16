@@ -441,3 +441,10 @@ websockets — that gets a manual smoke test after deploy.
 - **New seasonal occasion**: one date check in `lib/occasions.js`, one
   particle layer/CSS block in `LoadingScreen.js`/`globals.css`.
 - **Bigger items**: see [ROADMAP.md](ROADMAP.md).
+- **Hardware (Prodigy D9000W)**: the plan to run Blackbird on the
+  auto-scoring board itself — local-first SQLite event log, device-token
+  ingestion via Vercel, private Realtime — is specified in
+  [docs/prodigy-development-guide.md](docs/prodigy-development-guide.md).
+  Its Phase 2 (extracting the scoring rules into a pure event-sourced
+  reducer) is a pure-software refactor of §8 that also fixes the
+  reload-loses-game limitation.
