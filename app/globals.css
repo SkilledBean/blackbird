@@ -1119,3 +1119,78 @@ label.check input {
   background: #000000;
   color: #ffffff;
 }
+
+/* ---------- seasonal loading-screen flourishes ---------- */
+.load-fx {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.load-wrap {
+  position: relative;
+  z-index: 2;
+}
+.load-title {
+  position: relative;
+}
+.load-hat {
+  position: absolute;
+  width: calc(30px * var(--fs-chrome));
+  height: calc(30px * var(--fs-chrome));
+  left: calc(-9px * var(--fs-chrome));
+  top: calc(-20px * var(--fs-chrome));
+  transform: rotate(-20deg);
+  animation: load-up 0.5s 0.3s ease both;
+}
+.load-confetti {
+  position: absolute;
+  top: -4vh;
+  border-radius: 2px;
+  animation-name: load-confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes load-confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(110vh) rotate(660deg);
+  }
+}
+.load-flake {
+  position: absolute;
+  top: -4vh;
+  border-radius: 50%;
+  background: #a9b8c8;
+  animation-name: load-snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+[data-theme="dark"] .load-flake,
+[data-theme="glass"] .load-flake,
+[data-skin="anduril"] .load-flake {
+  background: #ffffff;
+}
+@keyframes load-snow-fall {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(55vh) translateX(2.5vw);
+  }
+  100% {
+    transform: translateY(110vh) translateX(-1.5vw);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .load-fx {
+    display: none;
+  }
+  .load-hat {
+    animation: none;
+    opacity: 1;
+  }
+}

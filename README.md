@@ -44,7 +44,9 @@ localStorage — Postgres is the single source of truth.
   tablets/desktop (wider layout, two-column charts), and TVs (`/tv`).
 - **Launch splash**: every open starts with the Blackbird wordmark and a
   spinning mini dartboard as the loading wheel — a simple 8-section board
-  drawn in one color per theme — held for 1–3 seconds.
+  drawn in one color per theme — held for 1–3 seconds. Seasonal touches:
+  confetti and a party hat on the wordmark every September 11, falling
+  snow all December (preview any day with `?occasion=birthday|snow`).
 - **Games**: X01 with optional double-out, Cricket (3 variants), Baseball
   (9 innings + extra innings on ties).
 - **Cricket MPR**: live **marks-per-round** for every player while the game is
