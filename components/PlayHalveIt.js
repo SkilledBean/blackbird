@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartValue, dartLabel } from "@/lib/darts";
+import Celebration from "./Celebration";
 
 const TARGETS = [20, 19, 18, "D", 17, 16, 15, "T", "B"];
 
@@ -41,6 +42,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
   const [mult, setMult] = useState(() => resume?.mult ?? 1);
   const [msg, setMsg] = useState(() => resume?.msg ?? "");
   const [history, setHistory] = useState(() => resume?.history ?? []);
+  const [celeb, setCeleb] = useState(null);
 
   useEffect(() => {
     onProgress && onProgress({ s, turn, turnDarts, mult, msg, history });
@@ -69,6 +71,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
       ns.scores[cur] = Math.floor(ns.scores[cur] / 2);
       ns.halves[cur] += 1;
       halved = true;
+      setCeleb({ type: "halved" });
     } else {
       ns.scores[cur] += turnScore;
     }
@@ -141,6 +144,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
 
   return (
     <div className="fade">
+      {celeb && <Celebration type={celeb.type} label={celeb.label} onDone={() => setCeleb(null)} />}
       <div className="between mb-12">
         <div>
           <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>

@@ -35,6 +35,12 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
   const label = (r) => {
     if (r.gameType === "x01") return `${r.config.startScore}`;
     if (r.gameType === "baseball") return "Baseball";
+    if (r.gameType === "aroundTheClock") return "Clock";
+    if (r.gameType === "killer") return "Killer";
+    if (r.gameType === "shanghai") return "Shanghai";
+    if (r.gameType === "halveit") return "Halve It";
+    if (r.gameType === "gotcha") return "Gotcha";
+    if (r.gameType === "tictactoe") return "Tic-Tac-Toe";
     const v = r.config?.variant;
     return v === "cutthroat" ? "Cricket·Cut" : v === "noscore" ? "Cricket·NS" : "Cricket";
   };
@@ -132,6 +138,39 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
       </div>
       )}
 
+      {stats.x01.games > 0 && stats.x01.first9Avg > 0 && (
+      <div className="card mb-12">
+        <h3 className="section-title">X01 advanced</h3>
+        <div className="grid-3">
+          <Mini label="First 9 avg" value={stats.x01.first9Avg.toFixed(1)} />
+          <Mini label="High out" value={stats.x01.highestCheckout || "—"} />
+          <Mini label="High turn" value={stats.x01.highestTurn} />
+        </div>
+      </div>
+      )}
+
+      {stats.cricket.games > 0 && Object.keys(stats.cricket.perNumber || {}).length > 0 && (
+      <div className="card mb-12">
+        <h3 className="section-title">Cricket number strengths</h3>
+        <div className="grid-4" style={{ gap: 6 }}>
+          {["20", "19", "18", "17", "16", "15", "B"].map((k) => {
+            const pn = (stats.cricket.perNumber || {})[k];
+            if (!pn || !pn.darts) return null;
+            const avg = (pn.hits / pn.darts).toFixed(2);
+            return (
+              <div key={k} style={{ textAlign: "center" }}>
+                <div className="num" style={{ fontSize: "calc(16px * var(--fs))", color: "var(--accent)" }}>{avg}</div>
+                <div className="tag">{k === "B" ? "Bull" : k}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="tag" style={{ marginTop: 6, textTransform: "none", letterSpacing: 0 }}>
+          Average marks per dart thrown at each number
+        </div>
+      </div>
+      )}
+
       {stats.baseball.games > 0 && (
       <div className="card mb-12">
         <h3 className="section-title">Baseball</h3>
@@ -139,6 +178,31 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
           <Mini label="Avg runs" value={stats.baseball.avgRuns.toFixed(1)} />
           <Mini label="Win %" value={stats.baseball.winPct.toFixed(0)} />
           <Mini label="Games" value={stats.baseball.games} />
+        </div>
+      </div>
+      )}
+
+      {(stats.aroundTheClock.games > 0 || stats.killer.games > 0 || stats.shanghai.games > 0 || stats.halveit.games > 0 || stats.gotcha.games > 0 || stats.tictactoe.games > 0) && (
+      <div className="card mb-12">
+        <h3 className="section-title">Other games</h3>
+        <div className="grid-3" style={{ gap: 8 }}>
+          {stats.aroundTheClock.games > 0 && <Mini label="Clock" value={`${stats.aroundTheClock.wins}-${stats.aroundTheClock.games - stats.aroundTheClock.wins}`} />}
+          {stats.killer.games > 0 && <Mini label="Killer" value={`${stats.killer.wins}-${stats.killer.games - stats.killer.wins}`} />}
+          {stats.shanghai.games > 0 && <Mini label="Shanghai" value={`${stats.shanghai.wins}-${stats.shanghai.games - stats.shanghai.wins}`} />}
+          {stats.halveit.games > 0 && <Mini label="Halve It" value={`${stats.halveit.wins}-${stats.halveit.games - stats.halveit.wins}`} />}
+          {stats.gotcha.games > 0 && <Mini label="Gotcha" value={`${stats.gotcha.wins}-${stats.gotcha.games - stats.gotcha.wins}`} />}
+          {stats.tictactoe.games > 0 && <Mini label="Tic-Tac-Toe" value={`${stats.tictactoe.wins}-${stats.tictactoe.games - stats.tictactoe.wins}`} />}
+        </div>
+      </div>
+      )}
+
+      {stats.bestWinStreak > 0 && (
+      <div className="card mb-12">
+        <h3 className="section-title">Streaks</h3>
+        <div className="grid-3">
+          <Mini label="Best streak" value={stats.bestWinStreak} />
+          <Mini label="Current" value={stats.winStreak} />
+          <Mini label="Form" value={stats.lastFive ? stats.lastFive.join("") : "—"} />
         </div>
       </div>
       )}

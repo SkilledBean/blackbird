@@ -13,6 +13,12 @@ export default function TVScoreboard({ game, snapshot }) {
   if (game.gameType === "cricket") return <TVCricket game={game} snapshot={snapshot} />;
   if (game.gameType === "x01") return <TVX01 game={game} snapshot={snapshot} />;
   if (game.gameType === "baseball") return <TVBaseball game={game} snapshot={snapshot} />;
+  if (game.gameType === "aroundTheClock") return <TVGeneric game={game} snapshot={snapshot} title="Around the Clock" />;
+  if (game.gameType === "killer") return <TVGeneric game={game} snapshot={snapshot} title="Killer" />;
+  if (game.gameType === "shanghai") return <TVGeneric game={game} snapshot={snapshot} title="Shanghai" />;
+  if (game.gameType === "halveit") return <TVGeneric game={game} snapshot={snapshot} title="Halve It" />;
+  if (game.gameType === "gotcha") return <TVGeneric game={game} snapshot={snapshot} title="Gotcha" />;
+  if (game.gameType === "tictactoe") return <TVGeneric game={game} snapshot={snapshot} title="Tic-Tac-Toe" />;
   return null;
 }
 
@@ -171,6 +177,40 @@ function TVBaseball({ game, snapshot }) {
         <div className="tv-boardwrap">
           <DartBoard highlight={[target]} hits={turnDarts} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TVGeneric({ game, snapshot, title }) {
+  const { players } = game;
+  const { state, turn } = snapshot;
+  if (!state) return null;
+  const cur = players[turn % players.length];
+  const round = Math.floor(turn / players.length) + 1;
+  const scoreKey = (u) => {
+    const s = state[u];
+    if (s == null) return "—";
+    if (typeof s === "number") return s;
+    if (typeof s.score === "number") return s.score;
+    if (typeof s.total === "number") return s.total;
+    if (typeof s.lives === "number") return s.lives;
+    return "—";
+  };
+
+  return (
+    <div className="tv-board">
+      <TVHeader left={title} right={`Round ${round}`} />
+      <div className="tv-x01-grid" style={{ "--tv-players": Math.min(players.length, 4), padding: "2vw" }}>
+        {players.map((u) => {
+          const active = u === cur;
+          return (
+            <div key={u} className={`tv-x01-card ${active ? "active" : ""}`}>
+              <div className="tv-x01-name">{u}</div>
+              <div className="tv-x01-score">{scoreKey(u)}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

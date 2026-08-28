@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { ACCENTS, FONT_SCALES } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
 
-export default function Account({ user, players, addPlayer, setPlayerHidden, isAdmin, onOpenAdmin, signOut, back }) {
+export default function Account({ user, players, results, addPlayer, setPlayerHidden, isAdmin, onOpenAdmin, signOut, back }) {
   const meta = user?.user_metadata || {};
   const [name, setName] = useState(meta.display_name || "");
   const [theme, setTheme] = useState(["dark", "glass"].includes(meta.theme) ? meta.theme : "light");
@@ -79,6 +79,39 @@ export default function Account({ user, players, addPlayer, setPlayerHidden, isA
     } finally {
       setHideBusy(false);
     }
+  };
+
+  const exportData = (format) => {
+    const me = trimmed.toLowerCase();
+    const myResults = results.filter((r) => r.username.toLowerCase() === me);
+    const rows = myResults.length > 0 ? myResults : results;
+    let blob;
+    let filename;
+    if (format === "json") {
+      blob = new Blob([JSON.stringify(rows, null, 2)], { type: "application/json" });
+      filename = "blackbird-results.json";
+    } else {
+      const cols = ["gameId", "gameType", "username", "result", "opponents", "completedAt"];
+      const lines = [cols.join(",")];
+      for (const r of rows) {
+        lines.push(cols.map((c) => {
+          const v = r[c];
+          if (Array.isArray(v)) return `"${v.join(";")}"`;
+          if (typeof v === "string" && v.includes(",")) return `"${v}"`;
+          return v == null ? "" : v;
+        }).join(","));
+      }
+      blob = new Blob([lines.join("\n")], { type: "text/csv" });
+      filename = "blackbird-results.csv";
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const addMe = async () => {
@@ -275,6 +308,23 @@ export default function Account({ user, players, addPlayer, setPlayerHidden, isA
           </>
         )}
       </div>
+
+      {results && results.length > 0 && (
+        <div className="card mb-12">
+          <div className="tag" style={{ marginBottom: 10 }}>Export data</div>
+          <p className="subtle" style={{ marginTop: 0 }}>
+            Download your game results as CSV or JSON.
+          </p>
+          <div className="row">
+            <button className="btn" style={{ flex: 1 }} onClick={() => exportData("csv")}>
+              Export CSV
+            </button>
+            <button className="btn" style={{ flex: 1 }} onClick={() => exportData("json")}>
+              Export JSON
+            </button>
+          </div>
+        </div>
+      )}
 
       {isAdmin && (
         <button

@@ -15,10 +15,17 @@ import Setup from "@/components/Setup";
 import PlayX01 from "@/components/PlayX01";
 import PlayCricket from "@/components/PlayCricket";
 import PlayBaseball from "@/components/PlayBaseball";
+import PlayAroundTheClock from "@/components/PlayAroundTheClock";
+import PlayKiller from "@/components/PlayKiller";
+import PlayShanghai from "@/components/PlayShanghai";
+import PlayHalveIt from "@/components/PlayHalveIt";
+import PlayGotcha from "@/components/PlayGotcha";
+import PlayTicTacToe from "@/components/PlayTicTacToe";
 import Leaderboard from "@/components/Leaderboard";
 import Profile from "@/components/Profile";
 import Matchup from "@/components/Matchup";
 import Insights from "@/components/Insights";
+import Records from "@/components/Records";
 import Account from "@/components/Account";
 import Admin from "@/components/Admin";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -321,8 +328,9 @@ export default function Page() {
     setView("home");
   };
 
-  const playViewFor = (gt) =>
-    gt === "x01" ? "playX01" : gt === "cricket" ? "playCricket" : "playBaseball";
+  const PLAY_VIEWS = { x01: "playX01", cricket: "playCricket", baseball: "playBaseball", aroundTheClock: "playAroundTheClock", killer: "playKiller", shanghai: "playShanghai", halveit: "playHalveIt", gotcha: "playGotcha", tictactoe: "playTicTacToe" };
+  const ALL_PLAY_VIEWS = Object.values(PLAY_VIEWS);
+  const playViewFor = (gt) => PLAY_VIEWS[gt] || "playX01";
   const goPlay = () => setView(live ? playViewFor(live.gameType) : "setup");
 
   if (!isConfigured) {
@@ -410,14 +418,12 @@ export default function Page() {
               liveGameRef.current = game;
               persistLive(game, null);
               setLive(game);
-              setView(
-                game.gameType === "x01" ? "playX01" : game.gameType === "cricket" ? "playCricket" : "playBaseball"
-              );
+              setView(playViewFor(game.gameType));
             }}
             back={() => setView("home")}
           />
         )}
-        {["playX01", "playCricket", "playBaseball"].includes(view) && live && castAvailable() && (
+        {ALL_PLAY_VIEWS.includes(view) && live && castAvailable() && (
           <div className="card pad-sm mb-12" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             {castCode ? (
               <>
@@ -445,8 +451,14 @@ export default function Page() {
         {view === "playX01" && live && <PlayX01 game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
         {view === "playCricket" && live && <PlayCricket game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
         {view === "playBaseball" && live && <PlayBaseball game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playAroundTheClock" && live && <PlayAroundTheClock game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playKiller" && live && <PlayKiller game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playShanghai" && live && <PlayShanghai game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playHalveIt" && live && <PlayHalveIt game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playGotcha" && live && <PlayGotcha game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playTicTacToe" && live && <PlayTicTacToe game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
         {view === "leaderboard" && (
-          <Leaderboard usernames={visibleUsernames} stats={stats} elo={elo} openProfile={openProfile} back={() => setView("home")} />
+          <Leaderboard usernames={visibleUsernames} stats={stats} elo={elo} openProfile={openProfile} openRecords={() => setView("records")} back={() => setView("home")} />
         )}
         {view === "profile" && profileUser && (
           <Profile
@@ -462,6 +474,9 @@ export default function Page() {
             back={() => setView("leaderboard")}
           />
         )}
+        {view === "records" && (
+          <Records usernames={visibleUsernames} stats={stats} results={results} back={() => setView("leaderboard")} />
+        )}
         {view === "matchup" && (
           <Matchup usernames={visibleUsernames} elo={elo} results={results} stats={stats} back={() => setView("home")} />
         )}
@@ -472,6 +487,7 @@ export default function Page() {
           <Account
             user={session.user}
             players={players}
+            results={results}
             addPlayer={addPlayer}
             setPlayerHidden={setPlayerHidden}
             isAdmin={isAdmin}
@@ -488,8 +504,8 @@ export default function Page() {
       </div>
       <nav className="nav">
         <button className={`navbtn ${view === "home" ? "active" : ""}`} onClick={() => setView("home")}>Home</button>
-        <button className={`navbtn ${["setup", "playX01", "playCricket", "playBaseball"].includes(view) ? "active" : ""}`} onClick={goPlay}>Play{live ? " ●" : ""}</button>
-        <button className={`navbtn ${["leaderboard", "profile"].includes(view) ? "active" : ""}`} onClick={() => setView("leaderboard")}>Stats</button>
+        <button className={`navbtn ${view === "setup" || ALL_PLAY_VIEWS.includes(view) ? "active" : ""}`} onClick={goPlay}>Play{live ? " ●" : ""}</button>
+        <button className={`navbtn ${["leaderboard", "profile", "records"].includes(view) ? "active" : ""}`} onClick={() => setView("leaderboard")}>Stats</button>
         <button className={`navbtn ${view === "matchup" ? "active" : ""}`} onClick={() => setView("matchup")}>Matchup</button>
         <button className={`navbtn ${view === "insights" ? "active" : ""}`} onClick={() => setView("insights")}>AI</button>
       </nav>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
+import Celebration from "./Celebration";
 
 const BEGINNER_TARGETS = [1, 2, 3, 4, 5, 6, 7];
 const ADVANCED_TARGETS = [15, 16, 17, 18, 19, 20, 25];
@@ -24,6 +25,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
   const [mult, setMult] = useState(() => resume?.mult ?? 1);
   const [msg, setMsg] = useState(() => resume?.msg ?? "");
   const [history, setHistory] = useState(() => resume?.history ?? []);
+  const [celeb, setCeleb] = useState(null);
 
   useEffect(() => {
     onProgress && onProgress({ s, turn, turnDarts, mult, msg, history });
@@ -62,6 +64,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
 
     // check Shanghai instant win
     if (isShanghai(darts)) {
+      setCeleb({ type: "shanghai" });
       const perPlayer = {};
       players.forEach((u) => {
         perPlayer[u] = {
@@ -157,6 +160,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
 
   return (
     <div className="fade">
+      {celeb && <Celebration type={celeb.type} label={celeb.label} onDone={() => setCeleb(null)} />}
       <div className="between mb-12">
         <div>
           <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartValue, dartLabel } from "@/lib/darts";
+import Celebration from "./Celebration";
 
 export default function PlayGotcha({ game, resume, onProgress, onFinish, onQuit, castActive }) {
   const { players, config } = game;
@@ -19,6 +20,7 @@ export default function PlayGotcha({ game, resume, onProgress, onFinish, onQuit,
   const [mult, setMult] = useState(() => resume?.mult ?? 1);
   const [msg, setMsg] = useState(() => resume?.msg ?? "");
   const [history, setHistory] = useState(() => resume?.history ?? []);
+  const [celeb, setCeleb] = useState(null);
 
   useEffect(() => {
     onProgress && onProgress({ s, turn, turnDarts, mult, msg, history });
@@ -75,6 +77,7 @@ export default function PlayGotcha({ game, resume, onProgress, onFinish, onQuit,
       });
       if (resetted.length > 0) {
         feedback = `RESET ${resetted.join(", ")}!`;
+        setCeleb({ type: "reset" });
       }
     }
 
@@ -122,6 +125,7 @@ export default function PlayGotcha({ game, resume, onProgress, onFinish, onQuit,
 
   return (
     <div className="fade">
+      {celeb && <Celebration type={celeb.type} label={celeb.label} onDone={() => setCeleb(null)} />}
       <div className="between mb-12">
         <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>
           Gotcha · {target}
