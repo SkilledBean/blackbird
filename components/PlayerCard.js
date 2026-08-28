@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PlayerBadge } from "./ui";
 
 const FONT = '"Figtree", Arial, sans-serif';
 
@@ -203,7 +204,7 @@ function drawCard(user, stats, elo) {
   return canvas;
 }
 
-export default function PlayerCard({ user, stats, elo, onOpenAccount }) {
+export default function PlayerCard({ user, stats, elo, onOpenAccount, playerColors }) {
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
@@ -256,7 +257,9 @@ export default function PlayerCard({ user, stats, elo, onOpenAccount }) {
       />
       <div style={{ position: "relative" }}>
         <div className="tag" style={{ color: "var(--accent)" }}>Player card</div>
-        <div style={{ fontWeight: 800, fontSize: "calc(26px * var(--fs))", marginTop: 4 }}>{user}</div>
+        <div style={{ marginTop: 4 }}>
+          <PlayerBadge username={user} color={playerColors?.[user]} size={30} />
+        </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 6 }}>
           <span className="num" style={{ fontSize: "calc(40px * var(--fs))", color: "var(--accent)" }}>{Math.round(elo || 1000)}</span>
           <span className="tag">Elo</span>

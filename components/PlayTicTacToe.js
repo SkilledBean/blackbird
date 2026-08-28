@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
+import { PlayerBadge } from "./ui";
 
 const GRID = [20, 19, 18, 17, 16, 15, 14, 13, 12];
 const LINES = [
@@ -16,7 +17,7 @@ function checkWinner(board) {
   return null;
 }
 
-export default function PlayTicTacToe({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayTicTacToe({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
 
   const blank = () => ({
@@ -113,8 +114,14 @@ export default function PlayTicTacToe({ game, resume, onProgress, onFinish, onQu
   const p1 = players[0];
   const p2 = players[1];
 
+  const c1 = playerColors?.[p1] || "var(--accent)";
+  const c2 = playerColors?.[p2] || "var(--amber)";
+  const sameColor = c1 === c2;
+  const p1Color = sameColor ? "var(--accent)" : c1;
+  const p2Color = sameColor ? "var(--amber)" : c2;
+
   const cellColor = (owner) =>
-    owner === p1 ? "var(--accent)" : owner === p2 ? "var(--amber)" : "transparent";
+    owner === p1 ? p1Color : owner === p2 ? p2Color : "transparent";
   const cellInitial = (owner) =>
     owner ? owner.charAt(0).toUpperCase() : "";
 
@@ -132,13 +139,13 @@ export default function PlayTicTacToe({ game, resume, onProgress, onFinish, onQu
       {!castActive && (
         <div className="card pad-sm mb-12">
           <div className="between" style={{ marginBottom: 10 }}>
-            <span style={{ fontWeight: 700, color: cur === p1 ? "var(--accent)" : "var(--amber)" }}>
+            <span style={{ fontWeight: 700, color: cur === p1 ? p1Color : p2Color }}>
               {cur}'s turn
             </span>
             <span className="tag">
-              <span style={{ color: "var(--accent)" }}>{p1}</span>
+              <span style={{ color: p1Color }}>{p1}</span>
               {" vs "}
-              <span style={{ color: "var(--amber)" }}>{p2}</span>
+              <span style={{ color: p2Color }}>{p2}</span>
             </span>
           </div>
 

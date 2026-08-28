@@ -1,6 +1,6 @@
-import { BackBar, Mini } from "./ui";
+import { BackBar, Mini, PlayerBadge } from "./ui";
 
-export default function Records({ usernames, stats, results, back }) {
+export default function Records({ usernames, stats, results, back, playerColors }) {
   const records = computeRecords(results);
 
   return (
@@ -14,7 +14,7 @@ export default function Records({ usernames, stats, results, back }) {
           <div key={i} className="card pad-sm" style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: "calc(14px * var(--fs))" }}>{r.title}</div>
-              <div className="tag" style={{ marginTop: 2 }}>{r.holder} {r.detail ? `· ${r.detail}` : ""}</div>
+              <div className="tag" style={{ marginTop: 2 }}><PlayerBadge username={r.holder} color={playerColors?.[r.holder]} size={18} /> {r.detail ? `· ${r.detail}` : ""}</div>
             </div>
             <div className="num" style={{ fontSize: "calc(20px * var(--fs))", color: "var(--accent)" }}>
               {r.value}
@@ -32,7 +32,7 @@ export default function Records({ usernames, stats, results, back }) {
               .sort((a, b) => (stats[b].bestWinStreak || 0) - (stats[a].bestWinStreak || 0))
               .map((u) => (
                 <div key={u} className="between" style={{ padding: "6px 0", borderBottom: "1px solid var(--line)" }}>
-                  <span style={{ fontWeight: 700 }}>{u}</span>
+                  <PlayerBadge username={u} color={playerColors?.[u]} size={18} />
                   <span>
                     <span className="num" style={{ color: "var(--accent)", fontSize: "calc(15px * var(--fs))" }}>
                       {stats[u].bestWinStreak}

@@ -3,10 +3,11 @@ import { X01_TARGETS, CRICKET_VALUE } from "@/lib/constants";
 import { markSymbol } from "@/lib/darts";
 import DartBoard from "./DartBoard";
 import Celebration from "./Celebration";
+import { PlayerBadge } from "./ui";
 
 const numOf = (t) => (t === "B" ? 25 : Number(t));
 
-export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players } = game;
   const variant = game.config?.variant || "standard";
 
@@ -188,7 +189,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
           <tbody>
             {players.map((u) => (
               <tr key={u} className={u === cur ? "active" : ""}>
-                <td style={{ textAlign: "left", fontWeight: 700, whiteSpace: "nowrap" }}>{u}</td>
+                <td style={{ textAlign: "left", whiteSpace: "nowrap" }}><PlayerBadge username={u} color={playerColors?.[u]} size={18} /></td>
                 {X01_TARGETS.map((t) => (
                   <td
                     key={t}

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { BackBar } from "./ui";
+import { BackBar, PlayerBadge } from "./ui";
 import { BASE_ELO } from "@/lib/constants";
 
-export default function Leaderboard({ usernames, stats, elo, openProfile, openRecords, back }) {
+export default function Leaderboard({ usernames, stats, elo, openProfile, openRecords, back, playerColors }) {
   const [mode, setMode] = useState("overall");
 
   const rows = usernames
@@ -95,7 +95,7 @@ export default function Leaderboard({ usernames, stats, elo, openProfile, openRe
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
-                  {r.u}
+                  <PlayerBadge username={r.u} color={playerColors?.[r.u]} size={22} />
                   {arrow && (
                     <span style={{ fontSize: "calc(10px * var(--fs))", color: arrow.color }}>
                       {arrow.symbol}{Math.abs(r.s.eloChange)}

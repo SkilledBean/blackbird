@@ -1,6 +1,7 @@
 import { X01_TARGETS, BASEBALL_INNINGS } from "@/lib/constants";
 import { dartValue, markSymbol } from "@/lib/darts";
 import DartBoard from "@/components/DartBoard";
+import { PlayerBadge } from "@/components/ui";
 
 const numOf = (t) => (t === "B" ? 25 : Number(t));
 
@@ -56,7 +57,7 @@ function TVCricket({ game, snapshot }) {
             <tbody>
               {players.map((u) => (
                 <tr key={u} className={u === cur ? "active" : ""}>
-                  <td className="tv-name">{u}</td>
+                  <td className="tv-name"><PlayerBadge username={u} size={22} /></td>
                   {X01_TARGETS.map((t) => (
                     <td
                       key={t}
@@ -108,7 +109,7 @@ function TVX01({ game, snapshot }) {
               const shown = active ? s.scores[u] - turnSum : s.scores[u];
               return (
                 <div key={u} className={`tv-x01-card ${active ? "active" : ""}`}>
-                  <div className="tv-x01-name">{u}</div>
+                  <div className="tv-x01-name"><PlayerBadge username={u} size={24} /></div>
                   <div className="tv-x01-score" style={{ color: shown <= 40 ? "var(--red)" : undefined }}>
                     {shown}
                   </div>
@@ -160,7 +161,7 @@ function TVBaseball({ game, snapshot }) {
             <tbody>
               {players.map((u) => (
                 <tr key={u} className={u === cur ? "active" : ""}>
-                  <td className="tv-name">{u}</td>
+                  <td className="tv-name"><PlayerBadge username={u} size={22} /></td>
                   {cols.map((c) => (
                     <td key={c} className="tv-num">
                       {state[u].innings[c - 1] != null ? state[u].innings[c - 1] : ""}
@@ -206,7 +207,7 @@ function TVGeneric({ game, snapshot, title }) {
           const active = u === cur;
           return (
             <div key={u} className={`tv-x01-card ${active ? "active" : ""}`}>
-              <div className="tv-x01-name">{u}</div>
+              <div className="tv-x01-name"><PlayerBadge username={u} size={24} /></div>
               <div className="tv-x01-score">{scoreKey(u)}</div>
             </div>
           );

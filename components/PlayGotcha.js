@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartValue, dartLabel } from "@/lib/darts";
 import Celebration from "./Celebration";
+import { PlayerBadge } from "./ui";
 
-export default function PlayGotcha({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayGotcha({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
   const target = config.targetScore || 301;
 
@@ -157,7 +158,7 @@ export default function PlayGotcha({ game, resume, onProgress, onFinish, onQuit,
                 }}
               >
                 <div className="between">
-                  <span style={{ fontWeight: 700 }}>{u}</span>
+                  <PlayerBadge username={u} color={playerColors?.[u]} size={20} />
                   {active && <span className="tag" style={{ color: "var(--accent)" }}>throwing</span>}
                 </div>
                 <div

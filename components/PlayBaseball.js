@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { BASEBALL_INNINGS } from "@/lib/constants";
 import DartBoard from "./DartBoard";
+import { PlayerBadge } from "./ui";
 
-export default function PlayBaseball({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayBaseball({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players } = game;
   const n = players.length;
 
@@ -112,7 +113,7 @@ export default function PlayBaseball({ game, resume, onProgress, onFinish, onQui
           <tbody>
             {players.map((u) => (
               <tr key={u} className={u === cur ? "active" : ""}>
-                <td style={{ textAlign: "left", fontWeight: 700, whiteSpace: "nowrap" }}>{u}</td>
+                <td style={{ textAlign: "left", whiteSpace: "nowrap" }}><PlayerBadge username={u} color={playerColors?.[u]} size={18} /></td>
                 {cols.map((c) => (
                   <td key={c} className="num">
                     {state[u].innings[c - 1] != null ? state[u].innings[c - 1] : ""}

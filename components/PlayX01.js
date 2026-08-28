@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { Modal } from "./ui";
+import { Modal, PlayerBadge } from "./ui";
 import DartBoard from "./DartBoard";
 import Celebration from "./Celebration";
 import { dartValue, dartLabel } from "@/lib/darts";
 import { getCheckoutPath, isCheckoutRange } from "@/lib/checkouts";
 
-export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
   const start = config.startScore;
   const legs = config.legs || 1;
@@ -194,7 +194,7 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
               }}
             >
               <div className="between">
-                <span style={{ fontWeight: 700 }}>{u}</span>
+                <PlayerBadge username={u} color={playerColors?.[u]} size={20} />
                 {active && <span className="tag" style={{ color: "var(--accent)" }}>at the oche</span>}
               </div>
               <div

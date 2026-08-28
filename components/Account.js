@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { BackBar } from "./ui";
+import { BackBar, PlayerBadge } from "./ui";
 import { supabase } from "@/lib/supabase";
-import { ACCENTS, FONT_SCALES } from "@/lib/constants";
+import { ACCENTS, FONT_SCALES, PLAYER_COLORS, defaultPlayerColor } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
 
-export default function Account({ user, players, results, addPlayer, setPlayerHidden, isAdmin, onOpenAdmin, signOut, back }) {
+export default function Account({ user, players, results, addPlayer, setPlayerHidden, setPlayerColor, playerColors, isAdmin, onOpenAdmin, signOut, back }) {
   const meta = user?.user_metadata || {};
   const [name, setName] = useState(meta.display_name || "");
   const [theme, setTheme] = useState(["dark", "glass"].includes(meta.theme) ? meta.theme : "light");
@@ -294,6 +294,59 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
               >
                 {hideBusy ? "…" : myPlayer.hidden ? "Show me" : "Hide me"}
               </button>
+            </div>
+
+            <div style={{ paddingTop: 14, borderTop: "1px solid var(--line)", marginTop: 14 }}>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Player Color</div>
+              <div className="tag" style={{ textTransform: "none", letterSpacing: 0, marginBottom: 8 }}>
+                This color shows next to your name across all views.
+              </div>
+              <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
+                <PlayerBadge username={myPlayer.username} color={playerColors?.[myPlayer.username]} size={32} />
+              </div>
+              <div className="flex-wrap" style={{ alignItems: "center" }}>
+                {PLAYER_COLORS.map((hex) => (
+                  <button
+                    key={hex}
+                    onClick={() => setPlayerColor(myPlayer.username, hex)}
+                    aria-label={hex}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      background: hex,
+                      cursor: "pointer",
+                      border: (playerColors?.[myPlayer.username] || defaultPlayerColor(myPlayer.username)) === hex
+                        ? "3px solid var(--ink)"
+                        : "2px solid var(--line)",
+                    }}
+                  />
+                ))}
+                <label
+                  title="Custom color"
+                  style={{
+                    position: "relative",
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    overflow: "hidden",
+                    border: playerColors?.[myPlayer.username] && !PLAYER_COLORS.includes(playerColors[myPlayer.username])
+                      ? "3px solid var(--ink)"
+                      : "2px solid var(--line)",
+                    background: playerColors?.[myPlayer.username] && !PLAYER_COLORS.includes(playerColors[myPlayer.username])
+                      ? playerColors[myPlayer.username]
+                      : "conic-gradient(#e03a3a,#ea962b,#0e8c5a,#2563eb,#7c3aed,#e03a3a)",
+                  }}
+                >
+                  <input
+                    type="color"
+                    value={playerColors?.[myPlayer.username] || defaultPlayerColor(myPlayer.username)}
+                    onChange={(e) => setPlayerColor(myPlayer.username, e.target.value)}
+                    style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer", width: "100%", height: "100%" }}
+                  />
+                </label>
+              </div>
             </div>
           </>
         ) : (

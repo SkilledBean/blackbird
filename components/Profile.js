@@ -1,9 +1,9 @@
-import { BackBar, Stat, Mini } from "./ui";
+import { BackBar, Stat, Mini, PlayerBadge } from "./ui";
 import { LineChart } from "./Charts";
 import PlayerCard from "./PlayerCard";
 import { playerTimeline } from "@/lib/stats";
 
-export default function Profile({ user, stats, elo, results, onOpenAccount, back }) {
+export default function Profile({ user, stats, elo, results, onOpenAccount, back, playerColors }) {
   if (!stats) {
     return (
       <div className="fade">
@@ -58,7 +58,11 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
     <div className="fade">
       <BackBar back={back} title={user} />
 
-      <PlayerCard user={user} stats={stats} elo={elo} onOpenAccount={onOpenAccount} />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <PlayerBadge username={user} color={playerColors?.[user]} size={36} />
+      </div>
+
+      <PlayerCard user={user} stats={stats} elo={elo} onOpenAccount={onOpenAccount} playerColors={playerColors} />
 
       <div className="grid-3 mb-12">
         <Stat label="Elo" value={Math.round(elo || 1000)} />
@@ -218,7 +222,9 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
           >
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: "block" }}>
-                {label(r)} vs {(r.opponents || []).join(", ") || "solo"}
+                {label(r)} vs {(r.opponents || []).length > 0 ? (r.opponents || []).map((opp, oi) => (
+                  <span key={oi}>{oi > 0 && ", "}<PlayerBadge username={opp} color={playerColors?.[opp]} size={16} /></span>
+                )) : "solo"}
               </span>
               <span className="tag" style={{ textTransform: "none", letterSpacing: 0, fontSize: "calc(11px * var(--fs-chrome))" }}>
                 {fmtDate(r.completedAt)}

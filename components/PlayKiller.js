@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
+import { PlayerBadge } from "./ui";
 
-export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
   const numbers = config.numbers; // { [player]: number }
   const startLives = config.lives || 3;
@@ -155,7 +156,7 @@ export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit,
                 }}
               >
                 <div className="between">
-                  <span style={{ fontWeight: 700 }}>{u}</span>
+                  <PlayerBadge username={u} color={playerColors?.[u]} size={20} />
                   {active && <span className="tag" style={{ color: "var(--accent)" }}>at the oche</span>}
                 </div>
                 <div className="between" style={{ marginTop: 4 }}>

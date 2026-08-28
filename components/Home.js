@@ -1,4 +1,4 @@
-import { Stat } from "./ui";
+import { Stat, PlayerBadge } from "./ui";
 import { BarChart } from "./Charts";
 import { BASE_ELO } from "@/lib/constants";
 
@@ -26,7 +26,7 @@ function gamesPerWeek(results) {
   return buckets;
 }
 
-export default function Home({ setView, stats, elo, players, gameCount, results, openProfile }) {
+export default function Home({ setView, stats, elo, players, gameCount, results, openProfile, playerColors }) {
   const visible = players.filter((p) => !p.hidden);
   const weekly = gamesPerWeek(results || []);
   const ranked = visible
@@ -80,7 +80,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
               {i + 1}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700 }}>{r.u}</div>
+              <PlayerBadge username={r.u} color={playerColors?.[r.u]} size={22} />
               <div className="tag" style={{ marginTop: 2 }}>
                 {r.s ? `${r.s.wins}-${r.s.games - r.s.wins} · avg ${r.s.x01.threeDartAvg.toFixed(1)}` : "no games"}
               </div>

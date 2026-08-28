@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
 import Celebration from "./Celebration";
+import { PlayerBadge } from "./ui";
 
 const BEGINNER_TARGETS = [1, 2, 3, 4, 5, 6, 7];
 const ADVANCED_TARGETS = [15, 16, 17, 18, 19, 20, 25];
 
-export default function PlayShanghai({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayShanghai({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
   const mode = config.mode || "beginner";
   const targets = mode === "advanced" ? ADVANCED_TARGETS : BEGINNER_TARGETS;
@@ -196,7 +197,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
                 }}
               >
                 <div className="between">
-                  <span style={{ fontWeight: 700 }}>{u}</span>
+                  <PlayerBadge username={u} color={playerColors?.[u]} size={20} />
                   {active && <span className="tag" style={{ color: "var(--accent)" }}>at the oche</span>}
                 </div>
                 <div

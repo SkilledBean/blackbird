@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { defaultPlayerColor } from "@/lib/constants";
 
 /**
  * Logo: shows your own image from /public/logo.png if present.
@@ -86,6 +87,60 @@ export function CastIcon({ size = "1.1em" }) {
       <path d="M2 16a5 5 0 0 1 4 4" />
       <line x1="2" y1="20" x2="2.01" y2="20" />
     </svg>
+  );
+}
+
+export function PersonIcon({ size = "1.2em" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      stroke="none"
+      aria-hidden="true"
+      style={{ display: "block", flex: "none" }}
+    >
+      <circle cx="12" cy="7" r="4" />
+      <path d="M12 13c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
+    </svg>
+  );
+}
+
+function isLight(hex) {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 160;
+}
+
+export function PlayerBadge({ username, color, size = 24, showName = true }) {
+  const bg = color || defaultPlayerColor(username);
+  const fg = isLight(bg) ? "#333" : "#fff";
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <span
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          background: bg,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: "none",
+          color: fg,
+          fontSize: size * 0.52,
+          fontWeight: 700,
+          lineHeight: 1,
+          userSelect: "none",
+        }}
+      >
+        {username.charAt(0).toUpperCase()}
+      </span>
+      {showName && <span style={{ fontWeight: 700 }}>{username}</span>}
+    </span>
   );
 }
 

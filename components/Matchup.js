@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { BackBar } from "./ui";
+import { BackBar, PlayerBadge } from "./ui";
 import { headToHead } from "@/lib/stats";
 import { BASE_ELO } from "@/lib/constants";
 
-export default function Matchup({ usernames, elo, results, stats, back }) {
+export default function Matchup({ usernames, elo, results, stats, back, playerColors }) {
   const [a, setA] = useState(usernames[0] || "");
   const [b, setB] = useState(usernames[1] || "");
 
@@ -69,11 +69,13 @@ export default function Matchup({ usernames, elo, results, stats, back }) {
               </span>
             </div>
             <div className="between" style={{ marginTop: 8 }}>
-              <span style={{ fontWeight: 700 }}>
+              <span style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <PlayerBadge username={a} color={playerColors?.[a]} size={18} showName={false} />
                 {a} <span className="tag">{Math.round(Ra)}</span>
               </span>
-              <span style={{ fontWeight: 700 }}>
+              <span style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 4 }}>
                 <span className="tag">{Math.round(Rb)}</span> {b}
+                <PlayerBadge username={b} color={playerColors?.[b]} size={18} showName={false} />
               </span>
             </div>
           </div>
@@ -87,8 +89,10 @@ export default function Matchup({ usernames, elo, results, stats, back }) {
                 Never played each other — prediction is Elo-only and rough.
               </p>
             ) : (
-              <div className="num" style={{ fontSize: "calc(22px * var(--fs))" }}>
-                {a} {h2h.aw} — {h2h.bw} {b}{" "}
+              <div className="num" style={{ fontSize: "calc(22px * var(--fs))", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                <PlayerBadge username={a} color={playerColors?.[a]} size={20} showName={false} />
+                {a} {h2h.aw} — {h2h.bw} {b}
+                <PlayerBadge username={b} color={playerColors?.[b]} size={20} showName={false} />{" "}
                 <span className="tag" style={{ fontSize: "calc(12px * var(--fs-chrome))" }}>
                   ({h2h.n} games)
                 </span>

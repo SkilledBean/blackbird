@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartValue, dartLabel } from "@/lib/darts";
 import Celebration from "./Celebration";
+import { PlayerBadge } from "./ui";
 
 const TARGETS = [20, 19, 18, "D", 17, 16, 15, "T", "B"];
 
@@ -26,7 +27,7 @@ function scoreDart(dart, target) {
   return 0;
 }
 
-export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit, castActive }) {
+export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
 
   const blank = () => ({
@@ -180,7 +181,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
                 }}
               >
                 <div className="between">
-                  <span style={{ fontWeight: 700 }}>{u}</span>
+                  <PlayerBadge username={u} color={playerColors?.[u]} size={20} />
                   {active && <span className="tag" style={{ color: "var(--accent)" }}>throwing</span>}
                 </div>
                 <div

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BackBar } from "./ui";
+import { BackBar, PlayerBadge } from "./ui";
 import { CRICKET_VARIANTS } from "@/lib/constants";
 
 const KILLER_NUMBERS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
@@ -14,7 +14,7 @@ function assignKillerNumbers(players) {
   return out;
 }
 
-export default function Setup({ players, addPlayer, onStart, back, me }) {
+export default function Setup({ players, addPlayer, onStart, back, me, playerColors }) {
   const meName = (me || "").trim();
   const [newName, setNewName] = useState("");
   const [selected, setSelected] = useState(meName ? [meName] : []);
@@ -264,9 +264,9 @@ export default function Setup({ players, addPlayer, onStart, back, me }) {
         <div className="flex-wrap">
           {selected.length === 0 && <span className="subtle">No players selected yet.</span>}
           {selected.map((u) => (
-            <button key={u} className="btn btn-primary" onClick={() => remove(u)}>
-              {u}
-              {u === meName ? " (you)" : ""} ✕
+            <button key={u} className="btn btn-primary" onClick={() => remove(u)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <PlayerBadge username={u} color={playerColors?.[u]} size={18} showName={false} />
+              {u}{u === meName ? " (you)" : ""} ✕
             </button>
           ))}
         </div>
