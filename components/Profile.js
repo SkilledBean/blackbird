@@ -68,25 +68,25 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
 
       <div className="charts-2col">
         <div className="card">
-          <h3 className="section-title">Elo over time</h3>
+          <h3 className="section-title">Elo Over Time</h3>
           <LineChart data={timeline.elo} color="var(--accent)" />
         </div>
 
         {stats.x01.games > 0 && (
           <div className="card">
-            <h3 className="section-title">3-dart average over time</h3>
+            <h3 className="section-title">3-Dart Average Over Time</h3>
             <LineChart data={timeline.avg} color="#3b82f6" decimals={1} />
           </div>
         )}
 
         <div className="card">
-          <h3 className="section-title">Win % over time</h3>
+          <h3 className="section-title">Win % Over Time</h3>
           <LineChart data={timeline.win} color="#16a34a" unit="%" />
         </div>
 
         {stats.cricket.games > 0 && (
           <div className="card">
-            <h3 className="section-title">Cricket MPR over time</h3>
+            <h3 className="section-title">Cricket MPR Over Time</h3>
             <LineChart data={timeline.mpr} color="var(--amber)" decimals={2} />
           </div>
         )}
@@ -140,7 +140,7 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
 
       {stats.x01.games > 0 && stats.x01.first9Avg > 0 && (
       <div className="card mb-12">
-        <h3 className="section-title">X01 advanced</h3>
+        <h3 className="section-title">X01 Advanced</h3>
         <div className="grid-3">
           <Mini label="First 9 avg" value={stats.x01.first9Avg.toFixed(1)} />
           <Mini label="High out" value={stats.x01.highestCheckout || "—"} />
@@ -151,7 +151,7 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
 
       {stats.cricket.games > 0 && Object.keys(stats.cricket.perNumber || {}).length > 0 && (
       <div className="card mb-12">
-        <h3 className="section-title">Cricket number strengths</h3>
+        <h3 className="section-title">Cricket Number Strengths</h3>
         <div className="grid-4" style={{ gap: 6 }}>
           {["20", "19", "18", "17", "16", "15", "B"].map((k) => {
             const pn = (stats.cricket.perNumber || {})[k];
@@ -184,7 +184,7 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
 
       {(stats.aroundTheClock.games > 0 || stats.killer.games > 0 || stats.shanghai.games > 0 || stats.halveit.games > 0 || stats.gotcha.games > 0 || stats.tictactoe.games > 0) && (
       <div className="card mb-12">
-        <h3 className="section-title">Other games</h3>
+        <h3 className="section-title">Other Games</h3>
         <div className="grid-3" style={{ gap: 8 }}>
           {stats.aroundTheClock.games > 0 && <Mini label="Clock" value={`${stats.aroundTheClock.wins}-${stats.aroundTheClock.games - stats.aroundTheClock.wins}`} />}
           {stats.killer.games > 0 && <Mini label="Killer" value={`${stats.killer.wins}-${stats.killer.games - stats.killer.wins}`} />}

@@ -60,6 +60,22 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
         headToHead: { aWins: h2h.aw, bWins: h2h.bw, gamesPlayed: h2h.n },
       };
     }
+    if (kind === "custom") {
+      const recentGames = (results || []).slice(-200).map((r) => ({
+        gameType: r.gameType,
+        username: r.username,
+        result: r.result,
+        opponents: r.opponents,
+        completedAt: r.completedAt,
+        config: r.config,
+        stats: r.stats,
+      }));
+      return {
+        totalGames: gameCount,
+        players: known.map((u) => playerRow(u, stats, elo)),
+        recentGameResults: recentGames,
+      };
+    }
     return {
       totalGames: gameCount,
       players: known.map((u) => playerRow(u, stats, elo)),
@@ -109,7 +125,7 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
 
   return (
     <div className="fade">
-      <BackBar back={back} title="AI insights" />
+      <BackBar back={back} title="AI Insights" />
 
       {known.length === 0 ? (
         <p className="subtle">Log a few games first — the AI needs data to analyse.</p>
@@ -190,7 +206,7 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
               onClick={generate}
               disabled={busy || !canGenerate}
             >
-              {busy ? "Analysing…" : kind === "custom" ? "Ask" : "Generate insight"}
+              {busy ? "Analysing…" : kind === "custom" ? "Ask" : "Generate Insight"}
             </button>
           </div>
 

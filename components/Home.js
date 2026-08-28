@@ -46,7 +46,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
       </div>
 
       <div className="card mb-12">
-        <h3 className="section-title">Games · last 3 months</h3>
+        <h3 className="section-title">Games · Last 3 Months</h3>
         <BarChart data={weekly} />
       </div>
 
@@ -55,11 +55,11 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
         style={{ width: "100%", fontSize: "calc(16px * var(--fs))", padding: 16 }}
         onClick={() => setView("setup")}
       >
-        Start a game
+        Start a Game
       </button>
 
       <hr className="sep" />
-      <h2 className="section-title">Top of the board</h2>
+      <h2 className="section-title">Top of the Board</h2>
 
       {ranked.length === 0 && (
         <p className="subtle">No players yet. Start a game to add some.</p>

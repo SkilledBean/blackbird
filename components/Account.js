@@ -126,12 +126,12 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
 
       <div className="card mb-12">
         <div className="tag" style={{ marginBottom: 6 }}>
-          Signed in as
+          Signed In As
         </div>
         <div style={{ fontWeight: 700, marginBottom: 16 }}>{user?.email}</div>
 
         <div className="tag" style={{ marginBottom: 6 }}>
-          Display name
+          Display Name
         </div>
         <input
           className="input"
@@ -150,7 +150,7 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
           onClick={saveName}
           disabled={busy || !trimmed || trimmed === (meta.display_name || "")}
         >
-          {busy ? "Saving…" : "Save display name"}
+          {busy ? "Saving…" : "Save Display Name"}
         </button>
       </div>
 
@@ -187,7 +187,7 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
         </div>
 
         <div className="tag" style={{ margin: "14px 0 6px" }}>
-          Text size
+          Text Size
         </div>
         <div className="grid-4">
           {FONT_SCALES.map((f) => (
@@ -211,7 +211,7 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
         </div>
 
         <div className="tag" style={{ margin: "14px 0 8px" }}>
-          Accent color
+          Accent Color
         </div>
         <div className="flex-wrap" style={{ alignItems: "center" }}>
           {Object.entries(ACCENTS).map(([key, hex]) => (
@@ -260,7 +260,7 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
 
       <div className="card mb-12">
         <div className="tag" style={{ marginBottom: 10 }}>
-          Player profile
+          Player Profile
         </div>
         {!trimmed ? (
           <p className="subtle" style={{ margin: 0 }}>Set a display name above first.</p>
@@ -281,7 +281,7 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
               }}
             >
               <div>
-                <div style={{ fontWeight: 700 }}>Show on leaderboard</div>
+                <div style={{ fontWeight: 700 }}>Show on Leaderboard</div>
                 <div className="tag" style={{ textTransform: "none", letterSpacing: 0, marginTop: 2 }}>
                   {myPlayer.hidden ? "You're hidden from the standings." : "You're visible in the standings."}
                 </div>
@@ -311,7 +311,7 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
 
       {results && results.length > 0 && (
         <div className="card mb-12">
-          <div className="tag" style={{ marginBottom: 10 }}>Export data</div>
+          <div className="tag" style={{ marginBottom: 10 }}>Export Data</div>
           <p className="subtle" style={{ marginTop: 0 }}>
             Download your game results as CSV or JSON.
           </p>
@@ -332,12 +332,12 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
           style={{ width: "100%" }}
           onClick={onOpenAdmin}
         >
-          Open admin panel
+          Open Admin Panel
         </button>
       )}
 
       <button className="btn btn-danger" style={{ width: "100%" }} onClick={signOut}>
-        Sign out
+        Sign Out
       </button>
     </div>
   );

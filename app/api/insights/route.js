@@ -23,6 +23,10 @@ function buildPrompt(kind, summary, question) {
   const system =
     "You are a sharp darts analyst for a small friendly league. " +
     "Use ONLY the JSON data provided; never invent stats or names. " +
+    "The data may include aggregate player stats AND individual game results " +
+    "(with per-game stats like highestTurn, checkout, runs, mpr, dartsThrown, dates, opponents). " +
+    "When answering questions about specific games, records, or events, reference " +
+    "the individual game results and their dates. " +
     "Write plain prose (no markdown headers or bullet symbols), specific and " +
     "citing the real numbers. Be as thorough as the question needs: a few sentences " +
     "for simple asks, and a full, well-organized answer (up to ~500 words) for " +

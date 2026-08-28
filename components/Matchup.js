@@ -39,7 +39,7 @@ export default function Matchup({ usernames, elo, results, stats, back }) {
 
   return (
     <div className="fade">
-      <BackBar back={back} title="Matchup predictor" />
+      <BackBar back={back} title="Matchup Predictor" />
 
       <div className="card mb-12">
         <div className="row">
@@ -54,7 +54,7 @@ export default function Matchup({ usernames, elo, results, stats, back }) {
         <>
           <div className="card mb-12">
             <div className="tag" style={{ marginBottom: 12 }}>
-              Predicted win likelihood (Elo)
+              Predicted Win Likelihood (Elo)
             </div>
             <div className="row" style={{ alignItems: "center" }}>
               <span className="num" style={{ fontSize: "calc(30px * var(--fs))", color: "var(--accent)" }}>
@@ -80,7 +80,7 @@ export default function Matchup({ usernames, elo, results, stats, back }) {
 
           <div className="card mb-12">
             <div className="tag" style={{ marginBottom: 6 }}>
-              Head to head
+              Head to Head
             </div>
             {h2h.n === 0 ? (
               <p className="subtle" style={{ margin: 0 }}>
@@ -98,7 +98,7 @@ export default function Matchup({ usernames, elo, results, stats, back }) {
 
           <div className="card">
             <div className="tag" style={{ marginBottom: 10 }}>
-              Form (3-dart avg)
+              Form (3-Dart Avg)
             </div>
             <div className="row">
               <div style={{ flex: 1, textAlign: "center" }}>
