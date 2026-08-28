@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Modal } from "./ui";
 import DartBoard from "./DartBoard";
+import Celebration from "./Celebration";
 import { dartValue, dartLabel } from "@/lib/darts";
+import { getCheckoutPath, isCheckoutRange } from "@/lib/checkouts";
 
 export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, castActive }) {
   const { players, config } = game;
   const start = config.startScore;
+  const legs = config.legs || 1;
+  const isLegs = legs > 1;
 
   const blank = () => ({
     scores: players.reduce((o, u) => ((o[u] = start), o), {}),
@@ -14,7 +18,6 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
     highestTurn: players.reduce((o, u) => ((o[u] = 0), o), {}),
     checkout: players.reduce((o, u) => ((o[u] = 0), o), {}),
     log: players.reduce((o, u) => ((o[u] = []), o), {}),
-    // per-position [1st, 2nd, 3rd] dart sums/counts for averages
     dartPos: players.reduce(
       (o, u) => ((o[u] = [{ sum: 0, count: 0 }, { sum: 0, count: 0 }, { sum: 0, count: 0 }]), o),
       {}
@@ -27,14 +30,42 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
   const [mult, setMult] = useState(() => resume?.mult ?? 1);
   const [msg, setMsg] = useState(() => resume?.msg ?? "");
   const [history, setHistory] = useState(() => resume?.history ?? []);
+  const [celeb, setCeleb] = useState(null);
+  const [legsWon, setLegsWon] = useState(() => resume?.legsWon ?? players.reduce((o, u) => ((o[u] = 0), o), {}));
+  const [legHistory, setLegHistory] = useState(() => resume?.legHistory ?? []);
 
   useEffect(() => {
-    onProgress && onProgress({ s, turn, turnDarts, mult, msg, history });
-  }, [s, turn, turnDarts, mult, msg, history, onProgress]);
+    onProgress && onProgress({ s, turn, turnDarts, mult, msg, history, legsWon, legHistory });
+  }, [s, turn, turnDarts, mult, msg, history, legsWon, legHistory, onProgress]);
 
   const cur = players[turn % players.length];
   const turnSum = turnDarts.reduce((a, d) => a + dartValue(d), 0);
   const remaining = s.scores[cur] - turnSum;
+
+  const finishGame = useCallback((ns, winner) => {
+    const perPlayer = {};
+    players.forEach((u) => {
+      perPlayer[u] = {
+        dartsThrown: ns.darts[u],
+        pointsScored: ns.points[u],
+        highestTurn: ns.highestTurn[u],
+        checkout: u === winner ? ns.checkout[u] : 0,
+        finalScore: ns.scores[u],
+        darts: ns.log[u],
+        dartPos: ns.dartPos[u],
+        legsWon: isLegs ? (legsWon[u] + (u === winner ? 1 : 0)) : undefined,
+      };
+    });
+    onFinish({
+      id: game.id,
+      gameType: "x01",
+      config,
+      players,
+      winner,
+      perPlayer,
+      completedAt: new Date().toISOString(),
+    });
+  }, [game, players, config, isLegs, legsWon, onFinish]);
 
   const commit = (darts, kind) => {
     setHistory((h) => [...h, { s: JSON.parse(JSON.stringify(s)), turn }]);
@@ -43,8 +74,6 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
     const ns = JSON.parse(JSON.stringify(s));
     ns.darts[cur] += darts.length;
     ns.log[cur] = [...ns.log[cur], ...darts];
-    // per-position averages: busted turns count the dart but score 0,
-    // matching how the overall 3-dart average treats busts
     const counted = kind !== "bust";
     darts.forEach((d, i) => {
       if (i > 2) return;
@@ -59,29 +88,32 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
     setTurnDarts([]);
     setMult(1);
 
+    if (sum === 180 && kind !== "bust") {
+      setCeleb({ type: "180" });
+    }
+
     if (kind === "win") {
       ns.checkout[cur] = scoreBefore;
-      const perPlayer = {};
-      players.forEach((u) => {
-        perPlayer[u] = {
-          dartsThrown: ns.darts[u],
-          pointsScored: ns.points[u],
-          highestTurn: ns.highestTurn[u],
-          checkout: u === cur ? scoreBefore : 0,
-          finalScore: ns.scores[u],
-          darts: ns.log[u],
-          dartPos: ns.dartPos[u],
-        };
-      });
-      onFinish({
-        id: game.id,
-        gameType: "x01",
-        config,
-        players,
-        winner: cur,
-        perPlayer,
-        completedAt: new Date().toISOString(),
-      });
+      if (scoreBefore >= 100) {
+        setCeleb({ type: "checkout", label: `${scoreBefore} checkout!` });
+      }
+      if (isLegs) {
+        const newLegsWon = { ...legsWon, [cur]: legsWon[cur] + 1 };
+        const needed = Math.ceil(legs / 2);
+        if (newLegsWon[cur] >= needed) {
+          setLegsWon(newLegsWon);
+          finishGame(ns, cur);
+          return;
+        }
+        setLegHistory(lh => [...lh, { winner: cur, darts: ns.darts[cur], checkout: scoreBefore }]);
+        setLegsWon(newLegsWon);
+        setS(blank());
+        setHistory([]);
+        setTurn(0);
+        setMsg(`${cur} wins leg ${newLegsWon[cur]}!`);
+        return;
+      }
+      finishGame(ns, cur);
       return;
     }
     setS(ns);
@@ -119,12 +151,21 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
   };
 
   const avg = (u) => (s.darts[u] ? ((s.points[u] / s.darts[u]) * 3).toFixed(1) : "0.0");
+  const checkoutHint = config.doubleOut && isCheckoutRange(remaining) && turnDarts.length < 3 ? getCheckoutPath(remaining) : null;
 
   return (
     <div className="fade">
+      {celeb && <Celebration type={celeb.type} label={celeb.label} onDone={() => setCeleb(null)} />}
       <div className="between mb-12">
-        <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>
-          {start} · {config.doubleOut ? "double out" : "straight out"}
+        <div>
+          <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>
+            {start} · {config.doubleOut ? "double out" : "straight out"}
+          </div>
+          {isLegs && (
+            <div className="tag" style={{ marginTop: 2 }}>
+              Best of {legs} — {players.map(u => `${u} ${legsWon[u]}`).join(" · ")}
+            </div>
+          )}
         </div>
         <button className="btn btn-danger" style={{ padding: "7px 12px" }} onClick={onQuit}>
           Quit
@@ -135,8 +176,6 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
       <div
         style={{
           display: "grid",
-          // two side-by-side normally; drops to one per row once the score
-          // text is scaled up enough that two no longer fit
           gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, calc(120px * var(--fs))), 1fr))",
           gap: 10,
           marginBottom: 12,
@@ -166,11 +205,20 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
               </div>
               <div className="tag" style={{ marginTop: 4 }}>
                 avg {avg(u)} · {s.darts[u]} darts
+                {isLegs ? ` · legs ${legsWon[u]}` : ""}
               </div>
             </div>
           );
         })}
       </div>
+      )}
+
+      {checkoutHint && (
+        <div className="card pad-sm mb-12" style={{ borderColor: "var(--accent)", background: "var(--accent-soft)" }}>
+          <span className="tag" style={{ color: "var(--accent)", letterSpacing: 0, textTransform: "none" }}>
+            Checkout: {checkoutHint}
+          </span>
+        </div>
       )}
 
       <div className="card">

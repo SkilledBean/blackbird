@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X01_TARGETS, CRICKET_VALUE } from "@/lib/constants";
 import { markSymbol } from "@/lib/darts";
 import DartBoard from "./DartBoard";
+import Celebration from "./Celebration";
 
 const numOf = (t) => (t === "B" ? 25 : Number(t));
 
@@ -27,6 +28,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
   const [darts, setDarts] = useState(() => resume?.darts ?? []);
   const [ring, setRing] = useState(() => resume?.ring ?? 1);
   const [history, setHistory] = useState(() => resume?.history ?? []);
+  const [celeb, setCeleb] = useState(null);
 
   useEffect(() => {
     onProgress && onProgress({ state, turn, darts, ring, history });
@@ -106,19 +108,26 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
     setDarts([]);
 
     if (variant === "noscore") {
-      if (allClosed(ns[cur].marks)) return finish(ns, cur);
+      if (allClosed(ns[cur].marks)) {
+        setCeleb({ type: "close", label: "All closed!" });
+        return finish(ns, cur);
+      }
     } else if (variant === "cutthroat") {
       if (players.some((u) => allClosed(ns[u].marks))) {
         let winner = players[0];
         players.forEach((u) => {
           if (ns[u].points < ns[winner].points) winner = u;
         });
+        setCeleb({ type: "close", label: "All closed!" });
         return finish(ns, winner);
       }
     } else {
       const closedAll = allClosed(ns[cur].marks);
       const leads = players.every((u) => u === cur || ns[cur].points >= ns[u].points);
-      if (closedAll && leads) return finish(ns, cur);
+      if (closedAll && leads) {
+        setCeleb({ type: "close", label: "All closed!" });
+        return finish(ns, cur);
+      }
     }
     setTurn((t) => t + 1);
   };
@@ -150,6 +159,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
 
   return (
     <div className="fade">
+      {celeb && <Celebration type={celeb.type} label={celeb.label} onDone={() => setCeleb(null)} />}
       <div className="between mb-12">
         <div>
           <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>

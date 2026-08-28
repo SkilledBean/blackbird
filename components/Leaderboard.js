@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BackBar } from "./ui";
 import { BASE_ELO } from "@/lib/constants";
 
-export default function Leaderboard({ usernames, stats, elo, openProfile, back }) {
+export default function Leaderboard({ usernames, stats, elo, openProfile, openRecords, back }) {
   const [mode, setMode] = useState("overall");
 
   const rows = usernames
@@ -37,6 +37,18 @@ export default function Leaderboard({ usernames, stats, elo, openProfile, back }
     return Math.round(r.elo);
   };
 
+  const eloArrow = (s) => {
+    const ch = s.eloChange || 0;
+    if (ch > 0) return { symbol: "▲", color: "var(--accent)" };
+    if (ch < 0) return { symbol: "▼", color: "var(--red)" };
+    return null;
+  };
+
+  const formDots = (s) => {
+    if (!s.lastFive || s.lastFive.length === 0) return null;
+    return s.lastFive;
+  };
+
   return (
     <div className="fade">
       <BackBar back={back} title="Standings" />
@@ -59,26 +71,62 @@ export default function Leaderboard({ usernames, stats, elo, openProfile, back }
         ))}
       </div>
 
+      {openRecords && (
+        <button className="btn mb-12" style={{ width: "100%" }} onClick={openRecords}>
+          Records
+        </button>
+      )}
+
       {rows.length === 0 && <p className="subtle">No completed games in this category yet.</p>}
 
       <div className="stack-8">
-        {rows.map((r, i) => (
-          <div
-            key={r.u}
-            className="card pad-sm clickable"
-            style={{ display: "flex", alignItems: "center", gap: 12 }}
-            onClick={() => openProfile(r.u)}
-          >
-            <div className="num" style={{ fontSize: "calc(20px * var(--fs))", width: "calc(22px * var(--fs))", color: i === 0 ? "var(--amber)" : "var(--muted)" }}>
-              {i + 1}
+        {rows.map((r, i) => {
+          const arrow = mode === "overall" ? eloArrow(r.s) : null;
+          const form = formDots(r.s);
+          return (
+            <div
+              key={r.u}
+              className="card pad-sm clickable"
+              style={{ display: "flex", alignItems: "center", gap: 12 }}
+              onClick={() => openProfile(r.u)}
+            >
+              <div className="num" style={{ fontSize: "calc(20px * var(--fs))", width: "calc(22px * var(--fs))", color: i === 0 ? "var(--amber)" : "var(--muted)" }}>
+                {i + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+                  {r.u}
+                  {arrow && (
+                    <span style={{ fontSize: "calc(10px * var(--fs))", color: arrow.color }}>
+                      {arrow.symbol}{Math.abs(r.s.eloChange)}
+                    </span>
+                  )}
+                </div>
+                <div className="tag" style={{ marginTop: 2 }}>
+                  {sub(r.s)}
+                  {form && (
+                    <span style={{ marginLeft: 8 }}>
+                      {form.map((f, idx) => (
+                        <span
+                          key={idx}
+                          style={{
+                            display: "inline-block",
+                            width: "calc(7px * var(--fs))",
+                            height: "calc(7px * var(--fs))",
+                            borderRadius: "50%",
+                            background: f === "W" ? "var(--accent)" : "var(--red)",
+                            marginRight: 2,
+                          }}
+                        />
+                      ))}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="num" style={{ fontSize: "calc(17px * var(--fs))", color: "var(--accent)" }}>{big(r)}</div>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700 }}>{r.u}</div>
-              <div className="tag" style={{ marginTop: 2 }}>{sub(r.s)}</div>
-            </div>
-            <div className="num" style={{ fontSize: "calc(17px * var(--fs))", color: "var(--accent)" }}>{big(r)}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1194,3 +1194,78 @@ label.check input {
     opacity: 1;
   }
 }
+
+/* ---------- celebration overlay ---------- */
+.celeb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: celeb-in 0.3s ease both;
+}
+@keyframes celeb-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.celeb-burst {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.celeb-particle {
+  position: absolute;
+  bottom: 40%;
+  border-radius: 50%;
+  animation: celeb-rise 1s ease-out both;
+}
+@keyframes celeb-rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-60vh) rotate(var(--celeb-angle, 0deg)) scale(0.4);
+    opacity: 0;
+  }
+}
+.celeb-text {
+  position: relative;
+  text-align: center;
+}
+.celeb-big {
+  font-family: var(--font-display-stack);
+  font-weight: 900;
+  font-size: calc(64px * var(--fs));
+  line-height: 1;
+  color: var(--accent);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  animation: celeb-pop 0.5s ease both;
+}
+.celeb-sub {
+  font-weight: 700;
+  font-size: calc(18px * var(--fs));
+  color: var(--ink-soft);
+  margin-top: 6px;
+  animation: celeb-pop 0.5s 0.1s ease both;
+}
+@keyframes celeb-pop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .celeb-overlay { animation: none; opacity: 1; }
+  .celeb-particle { animation: none; display: none; }
+  .celeb-big, .celeb-sub { animation: none; opacity: 1; }
+}
