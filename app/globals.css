@@ -28,9 +28,9 @@
   --fs: 1;
   --fs-chrome: 1;
 
-  --radius: 14px;
-  --radius-sm: 10px;
-  --shadow: 0 1px 2px rgba(24, 26, 31, 0.04), 0 8px 24px rgba(24, 26, 31, 0.06);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 10px 30px rgba(0, 0, 0, 0.08);
 
   --font-display: "Figtree";
   --font-body: "Figtree";
@@ -47,7 +47,7 @@
   --muted: #7b828d;
   --line: #2a2f37;
   --line-strong: #3a414b;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 /* ---------- iOS-style liquid glass ---------- */
@@ -217,21 +217,21 @@ select {
 /* ---------- cards ---------- */
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px;
   box-shadow: var(--shadow);
 }
 .card.pad-sm {
-  padding: 12px;
+  padding: 14px;
 }
 .clickable {
   cursor: pointer;
-  transition: transform 0.08s ease, border-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .clickable:hover {
-  border-color: var(--line-strong);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 36px rgba(0, 0, 0, 0.1);
 }
 
 /* ---------- buttons ---------- */
@@ -242,16 +242,17 @@ select {
   border: 1px solid var(--line-strong);
   background: var(--surface);
   color: var(--ink);
-  padding: 11px 15px;
-  border-radius: var(--radius-sm);
+  padding: 11px 18px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.14s ease, transform 0.06s ease, border-color 0.14s;
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s, box-shadow 0.15s;
 }
 .btn:hover {
   background: var(--surface-2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 .btn:active {
-  transform: translateY(1px);
+  transform: scale(0.97);
 }
 .btn:disabled {
   opacity: 0.45;
@@ -292,15 +293,16 @@ select {
   background: var(--surface-2);
   border: 1px solid var(--line);
   color: var(--ink);
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
   padding: 13px 0;
   text-align: center;
   cursor: pointer;
-  transition: background 0.12s, transform 0.05s, border-color 0.12s;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s, box-shadow 0.15s;
 }
 .chip:hover {
   background: var(--line);
   border-color: var(--line-strong);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 .chip:active {
   transform: scale(0.96);
@@ -318,14 +320,15 @@ select {
   border: 1px solid var(--line-strong);
   color: var(--ink);
   border-radius: var(--radius-sm);
-  padding: 11px 12px;
+  padding: 12px 14px;
   font-size: calc(15px * var(--fs));
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .input:focus,
 .select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 4px var(--accent-soft);
 }
 .select {
   -webkit-appearance: none;
@@ -402,10 +405,10 @@ select {
 
 /* ---------- stat tiles ---------- */
 .stat {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: var(--surface-2);
+  border: 1px solid transparent;
   border-radius: var(--radius);
-  padding: 14px;
+  padding: 16px;
   text-align: center;
   box-shadow: var(--shadow);
 }
@@ -414,9 +417,9 @@ select {
 }
 .mini {
   text-align: center;
-  padding: 10px 6px;
+  padding: 10px 8px;
   background: var(--surface-2);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
 }
 .mini .num {
@@ -427,10 +430,11 @@ select {
 .bar {
   flex: 1;
   height: 16px;
-  border-radius: 9px;
+  border-radius: 999px;
   overflow: hidden;
   display: flex;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
+  background: var(--surface-2);
 }
 
 /* ---------- table (cricket) ---------- */
@@ -464,10 +468,10 @@ select {
   max-width: 744px;
   margin: 8px auto calc(8px + env(safe-area-inset-bottom));
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 6px;
-  box-shadow: var(--shadow);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 5px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   z-index: 30;
 }
 .navbtn {
@@ -479,9 +483,9 @@ select {
   font-size: calc(12.5px * var(--fs-chrome));
   letter-spacing: 0.03em;
   padding: 11px 4px;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background 0.14s, color 0.14s;
+  transition: background 0.15s, color 0.15s;
 }
 .navbtn.active {
   background: var(--accent);
@@ -501,8 +505,8 @@ select {
 }
 .modal {
   background: var(--surface);
-  border-radius: var(--radius);
-  padding: 20px;
+  border-radius: 24px;
+  padding: 24px;
   max-width: 360px;
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);

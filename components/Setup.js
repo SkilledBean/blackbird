@@ -65,10 +65,10 @@ export default function Setup({ players, addPlayer, onStart, back, me }) {
 
   return (
     <div className="fade">
-      <BackBar back={back} title="New game" />
+      <BackBar back={back} title="New Game" />
 
       <div className="card mb-12">
-        <div className="tag mb-12">Game type</div>
+        <div className="tag mb-12">Game Type</div>
         <div className="row" style={{ flexWrap: "wrap" }}>
           {[
             ["x01", "X01"],
@@ -95,7 +95,7 @@ export default function Setup({ players, addPlayer, onStart, back, me }) {
         {gameType === "x01" && (
           <div className="mt-12">
             <div className="tag" style={{ marginBottom: 6 }}>
-              Starting score
+              Starting Score
             </div>
             <div className="row">
               {[301, 501, 701].map((v) => (
@@ -228,7 +228,7 @@ export default function Setup({ players, addPlayer, onStart, back, me }) {
 
         {gameType === "gotcha" && (
           <div className="mt-12">
-            <div className="tag" style={{ marginBottom: 6 }}>Target score</div>
+            <div className="tag" style={{ marginBottom: 6 }}>Target Score</div>
             <div className="row">
               {[301, 501].map((v) => (
                 <button

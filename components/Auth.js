@@ -48,7 +48,7 @@ export default function Auth() {
           <div>
             <div className="brand-title">Blackbird</div>
             <div className="tag" style={{ marginTop: 2 }}>
-              dart scoring system
+              Dart Scoring System
             </div>
           </div>
         </div>

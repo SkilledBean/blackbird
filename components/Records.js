@@ -95,11 +95,11 @@ function computeRecords(results) {
     try { return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }); } catch { return ""; }
   };
 
-  if (highTurn) out.push({ title: "Highest turn", value: highTurn.val, holder: highTurn.user, detail: fmt(highTurn.date) });
-  if (highCheckout) out.push({ title: "Highest checkout", value: highCheckout.val, holder: highCheckout.user, detail: fmt(highCheckout.date) });
-  if (bestLeg) out.push({ title: "Best leg (fewest darts)", value: `${bestLeg.val}d`, holder: bestLeg.user, detail: fmt(bestLeg.date) });
-  if (bestMpr) out.push({ title: "Best MPR game", value: bestMpr.val.toFixed(2), holder: bestMpr.user, detail: fmt(bestMpr.date) });
-  if (bestBaseball) out.push({ title: "Most runs (baseball)", value: bestBaseball.val, holder: bestBaseball.user, detail: fmt(bestBaseball.date) });
+  if (highTurn) out.push({ title: "Highest Turn", value: highTurn.val, holder: highTurn.user, detail: fmt(highTurn.date) });
+  if (highCheckout) out.push({ title: "Highest Checkout", value: highCheckout.val, holder: highCheckout.user, detail: fmt(highCheckout.date) });
+  if (bestLeg) out.push({ title: "Best Leg (Fewest Darts)", value: `${bestLeg.val}d`, holder: bestLeg.user, detail: fmt(bestLeg.date) });
+  if (bestMpr) out.push({ title: "Best MPR Game", value: bestMpr.val.toFixed(2), holder: bestMpr.user, detail: fmt(bestMpr.date) });
+  if (bestBaseball) out.push({ title: "Most Runs (Baseball)", value: bestBaseball.val, holder: bestBaseball.user, detail: fmt(bestBaseball.date) });
 
   return out;
 }
