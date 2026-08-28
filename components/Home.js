@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Stat, PlayerBadge } from "./ui";
 import { BarChart } from "./Charts";
 import { BASE_ELO } from "@/lib/constants";
@@ -26,6 +27,51 @@ function gamesPerWeek(results) {
   return buckets;
 }
 
+function weeklyHighlights(results) {
+  const cutoff = Date.now() - WEEK_MS;
+  const week = (results || []).filter((r) => new Date(r.completedAt).getTime() > cutoff);
+  if (week.length === 0) return null;
+
+  const gameIds = new Set();
+  const gamesBy = {};
+  const winsBy = {};
+  let bestTurn = null;
+  let bestCheckout = null;
+  let bestMpr = null;
+
+  for (const r of week) {
+    if (r.gameId) gameIds.add(r.gameId);
+    gamesBy[r.username] = (gamesBy[r.username] || 0) + 1;
+    if (r.result === "win") winsBy[r.username] = (winsBy[r.username] || 0) + 1;
+
+    const s = r.stats || {};
+    if (r.gameType === "x01") {
+      if (s.highestTurn && (!bestTurn || s.highestTurn > bestTurn.val))
+        bestTurn = { user: r.username, val: s.highestTurn };
+      if (s.checkout && (!bestCheckout || s.checkout > bestCheckout.val))
+        bestCheckout = { user: r.username, val: s.checkout };
+    }
+    if (r.gameType === "cricket" && s.rounds && s.marks) {
+      const mpr = s.marks / s.rounds;
+      if (!bestMpr || mpr > bestMpr.val)
+        bestMpr = { user: r.username, val: Math.round(mpr * 100) / 100 };
+    }
+  }
+
+  const mostActive = Object.entries(gamesBy).sort((a, b) => b[1] - a[1])[0];
+  const topWinner = Object.entries(winsBy).sort((a, b) => b[1] - a[1])[0];
+
+  const items = [];
+  items.push({ label: "Games this week", value: String(gameIds.size || week.length) });
+  if (mostActive) items.push({ label: "Most active", value: mostActive[0], count: `${mostActive[1]} games` });
+  if (topWinner && topWinner[1] > 0) items.push({ label: "Most wins", value: topWinner[0], count: `${topWinner[1]} wins` });
+  if (bestTurn) items.push({ label: "High turn", value: bestTurn.user, count: String(bestTurn.val) });
+  if (bestCheckout) items.push({ label: "Best checkout", value: bestCheckout.user, count: String(bestCheckout.val) });
+  if (bestMpr) items.push({ label: "Best MPR", value: bestMpr.user, count: bestMpr.val.toFixed(2) });
+
+  return items;
+}
+
 export default function Home({ setView, stats, elo, players, gameCount, results, openProfile, playerColors }) {
   const visible = players.filter((p) => !p.hidden);
   const weekly = gamesPerWeek(results || []);
@@ -36,6 +82,8 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
   const topAvg = visible.length
     ? Math.max(0, ...visible.map((p) => stats[p.username]?.x01.threeDartAvg || 0))
     : 0;
+
+  const highlights = useMemo(() => weeklyHighlights(results), [results]);
 
   return (
     <div className="fade">
@@ -91,6 +139,26 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
           </div>
         ))}
       </div>
+
+      {highlights && highlights.length > 0 && (
+        <>
+          <hr className="sep" />
+          <h2 className="section-title">Weekly Highlights</h2>
+          <div className="card">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {highlights.map((h, i) => (
+                <div key={i} className="between" style={{ alignItems: "center", padding: "4px 0" }}>
+                  <span className="tag" style={{ flex: "none" }}>{h.label}</span>
+                  <span style={{ fontWeight: 700, fontSize: "calc(14px * var(--fs))", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    {h.count && <span style={{ color: "var(--accent)" }}>{h.count}</span>}
+                    {h.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

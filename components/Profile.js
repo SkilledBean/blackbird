@@ -7,7 +7,8 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
   if (!stats) {
     return (
       <div className="fade">
-        <BackBar back={back} title={user} />
+        <BackBar back={back} />
+        <div className="display" style={{ fontSize: "calc(22px * var(--fs))", marginBottom: 12 }}>{user}</div>
         <p className="subtle">No games logged yet.</p>
       </div>
     );
@@ -54,12 +55,21 @@ export default function Profile({ user, stats, elo, results, onOpenAccount, back
     }
   };
 
+  const wins = stats.wins;
+  const losses = stats.games - stats.wins;
+
   return (
     <div className="fade">
-      <BackBar back={back} title={user} />
+      <BackBar back={back} />
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <PlayerBadge username={user} color={playerColors?.[user]} size={36} />
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <PlayerBadge username={user} color={playerColors?.[user]} size={40} showName={false} />
+        <div>
+          <div className="display" style={{ fontSize: "calc(22px * var(--fs))" }}>{user}</div>
+          <div className="tag" style={{ textTransform: "none", letterSpacing: 0, marginTop: 2 }}>
+            {wins}-{losses} · {stats.games} games · {stats.winPct.toFixed(0)}% win
+          </div>
+        </div>
       </div>
 
       <PlayerCard user={user} stats={stats} elo={elo} onOpenAccount={onOpenAccount} playerColors={playerColors} />

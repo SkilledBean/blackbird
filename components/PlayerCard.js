@@ -278,16 +278,9 @@ export default function PlayerCard({ user, stats, elo, onOpenAccount, playerColo
         }}
       />
       <div style={{ position: "relative" }}>
-        <div className="tag" style={{ color: "var(--accent)" }}>Player card</div>
-        <div style={{ marginTop: 4 }}>
-          <PlayerBadge username={user} color={playerColors?.[user]} size={30} />
-        </div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 6 }}>
-          <span className="num" style={{ fontSize: "calc(40px * var(--fs))", color: "var(--accent)" }}>{Math.round(elo || 1000)}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span className="num" style={{ fontSize: "calc(36px * var(--fs))", color: "var(--accent)" }}>{Math.round(elo || 1000)}</span>
           <span className="tag">Elo</span>
-        </div>
-        <div className="tag" style={{ textTransform: "none", letterSpacing: 0, marginTop: 6 }}>
-          {wins}-{losses} · {stats.games} games · {stats.winPct.toFixed(0)}% win · avg {stats.x01.threeDartAvg.toFixed(1)}
         </div>
 
         <div className="row mt-12" style={{ flexWrap: "wrap" }}>

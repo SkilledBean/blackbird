@@ -8,7 +8,7 @@ import { ACCENTS, ADMIN_EMAIL, defaultPlayerColor } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
 import { applySkin } from "@/lib/skins";
 import { makeCastCode, openCastChannel, castAvailable, stripHistory } from "@/lib/cast";
-import { Logo, GearIcon, CastIcon, PersonIcon } from "@/components/ui";
+import { Logo, GearIcon, CastIcon, PlayerBadge } from "@/components/ui";
 import Auth from "@/components/Auth";
 import Home from "@/components/Home";
 import Setup from "@/components/Setup";
@@ -389,11 +389,10 @@ export default function Page() {
           <button
             className="btn"
             style={{
-              padding: "8px 11px",
+              padding: "6px",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              color: playerColors[session.user?.user_metadata?.display_name] || "var(--accent)",
             }}
             onClick={() => {
               const me = session.user?.user_metadata?.display_name;
@@ -403,7 +402,7 @@ export default function Page() {
             title="Your stats & card"
             aria-label="Your profile"
           >
-            <PersonIcon />
+            <PlayerBadge username={session.user?.user_metadata?.display_name || "?"} color={playerColors[session.user?.user_metadata?.display_name]} size={28} showName={false} />
           </button>
         </header>
 

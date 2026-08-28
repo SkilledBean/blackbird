@@ -46,8 +46,18 @@ function CheckIcon() {
 
 function SendIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-      <path d="M3 15l12-6L3 3v5l7 1-7 1v5z" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 12V4" />
+      <path d="M4 7l4-4 4 4" />
+    </svg>
+  );
+}
+
+function NewChatIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 3H3a1 1 0 00-1 1v8a1 1 0 001 1h2v3l4-3h6a1 1 0 001-1V4a1 1 0 00-1-1z" />
+      <path d="M9 6v4M7 8h4" />
     </svg>
   );
 }
@@ -191,13 +201,15 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
         {messages.length > 0 && (
           <button
             className="btn"
-            style={{ padding: "7px 12px" }}
+            style={{ padding: "7px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
             onClick={() => {
               setMessages([]);
               setPendingAction(null);
             }}
+            title="New Chat"
+            aria-label="New Chat"
           >
-            New Chat
+            <NewChatIcon />
           </button>
         )}
       </div>
