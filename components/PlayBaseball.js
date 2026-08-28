@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { BASEBALL_INNINGS } from "@/lib/constants";
 import DartBoard from "./DartBoard";
 
-export default function PlayBaseball({ game, resume, onProgress, onFinish, onQuit }) {
+export default function PlayBaseball({ game, resume, onProgress, onFinish, onQuit, castActive }) {
   const { players } = game;
   const n = players.length;
 
@@ -95,6 +95,7 @@ export default function PlayBaseball({ game, resume, onProgress, onFinish, onQui
         </button>
       </div>
 
+      {!castActive && (
       <div className="card pad-sm mb-12" style={{ overflowX: "auto" }}>
         <table className="cricket-table">
           <thead>
@@ -125,6 +126,7 @@ export default function PlayBaseball({ game, resume, onProgress, onFinish, onQui
           </tbody>
         </table>
       </div>
+      )}
 
       <div className="card">
         <div className="between" style={{ marginBottom: 10 }}>
@@ -156,9 +158,11 @@ export default function PlayBaseball({ game, resume, onProgress, onFinish, onQui
           Undo
         </button>
 
-        <div style={{ marginTop: 14 }}>
-          <DartBoard highlight={[target]} hits={turnDarts} />
-        </div>
+        {!castActive && (
+          <div style={{ marginTop: 14 }}>
+            <DartBoard highlight={[target]} hits={turnDarts} />
+          </div>
+        )}
       </div>
     </div>
   );

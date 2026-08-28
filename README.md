@@ -11,13 +11,49 @@ Everyone signs in with email/password, scores games on their phone, and the
 stats sync instantly for the whole group. No game data is kept in
 localStorage — Postgres is the single source of truth.
 
+## Screenshots
+
+*(Captured on a phone-sized viewport with demo data.)*
+
+| Loading screen | Loading (dark) | Home |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/loading-light.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, light theme"> | <img src="docs/screenshots/loading-dark.png" width="240" alt="Blackbird splash: wordmark with spinning dartboard wheel, dark theme"> | <img src="docs/screenshots/home.png" width="240" alt="Home view with quick stats, games-per-week chart, and top players"> |
+
+| Live cricket (MPR column) | Cricket leaderboard | Game setup |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/cricket-live-mpr.png" width="240" alt="Cricket scoring screen with live MPR per player and round number"> | <img src="docs/screenshots/leaderboard-cricket.png" width="240" alt="Standings sorted by cricket MPR"> | <img src="docs/screenshots/setup.png" width="240" alt="New game setup with cricket variants and player picker"> |
+
+| MPR over time | Cricket profile card | Phone while casting |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/profile-mpr-chart.png" width="240" alt="Profile trend charts including cricket MPR over time"> | <img src="docs/screenshots/profile-cricket.png" width="240" alt="Profile cricket card with career MPR, best MPR, and marks by round"> | <img src="docs/screenshots/phone-casting.png" width="240" alt="Simplified phone scoring UI while casting, showing the TV code"> |
+
+**TV scoreboard** (`/tv`, paired with the phone by a 4-character code):
+
+<img src="docs/screenshots/tv-cricket.png" width="740" alt="TV scoreboard showing a live cricket game with marks, points, MPR and whose throw it is">
+
+<img src="docs/screenshots/tv-x01.png" width="740" alt="TV scoreboard showing a live 501 game with giant remaining scores">
+
 ## What it is (at a glance)
 
+- **TV scoreboard (cast mode)**: tap Cast to TV during any game, put the
+  app's `/tv` page on a TV (AirPlay a Safari window, a smart TV browser, or
+  a Chromecast tab-cast), enter the 4-character code, and the TV shows a
+  huge live scoreboard while the phone switches to a simplified entry-only
+  UI.
+- **Responsive**: one codebase, three screen classes — phones (primary),
+  tablets/desktop (wider layout, two-column charts), and TVs (`/tv`).
+- **Launch splash**: every open starts with the Blackbird wordmark and a
+  spinning mini dartboard as the loading wheel — a simple 8-section board
+  drawn in one color per theme — held for 1–3 seconds. Seasonal touches:
+  confetti and a party hat on the wordmark every September 11, falling
+  snow all December (preview any day with `?occasion=birthday|snow`).
 - **Games**: X01 with optional double-out, Cricket (3 variants), Baseball
   (9 innings + extra innings on ties).
 - **Cricket MPR**: live **marks-per-round** for every player while the game is
   being played, per-round mark history saved with each game, career MPR and
   best-game MPR on profiles, and an MPR-over-time chart.
+- **Home dashboard**: player/game/top-average tiles plus a bar chart of
+  games played per week over the last 3 months.
 - **Stats**: win %, 3-dart average (overall and per dart position), highest
   turn, best leg, highest checkout, MPR, average runs, and more.
 - **Elo**: every multi-player game updates a shared Elo rating; the Matchup tab
@@ -26,9 +62,14 @@ localStorage — Postgres is the single source of truth.
   your choice (Gemini, Groq, OpenAI, or Anthropic) and answers questions like
   "who has improved the most lately?".
 - **Admin panel**: the configured admin account can manage login accounts,
-  hide/delete players, and reset scores.
+  hide/delete players, reset scores, and try experimental full-app skins
+  (theme lab — applies only to the admin's own account).
 
 ## System architecture
+
+*(Deep dive: [ARCHITECTURE.md](ARCHITECTURE.md) documents the whole system
+— boot sequence, data model, game-engine contract, TV cast protocol,
+theming, security — end to end.)*
 
 ```
 ┌─────────────────────────────┐
@@ -79,17 +120,33 @@ Key design points:
 
 ## How the app works
 
-1. **Sign in** (Supabase email/password). Your display name is auto-added to
+1. **Open the app** — a branded splash (the Blackbird wordmark with a
+   spinning mini dartboard as the loading wheel) shows for 1–3 seconds on
+   every launch while auth and data load behind it.
+2. **Sign in** (Supabase email/password). Your display name is auto-added to
    the shared `players` list so everyone can pick you as an opponent.
-2. **Setup** a game: pick the game type and options (start score + double-out
+3. **Setup** a game: pick the game type and options (start score + double-out
    for X01, variant for Cricket), and pick 1+ players.
-3. **Score the game** on the live screen. Cricket shows the classic marks
+4. **Cast to a TV (optional)** — tap **Cast to TV** on the live screen to
+   get a 4-character code, open the app's `/tv` page on the TV (smart TV
+   browser, AirPlayed Safari window, or Chromecast tab-cast) and enter the
+   code. The TV renders the full scoreboard huge — live marks/points/MPR
+   for cricket, giant remaining scores for X01, the box score for
+   baseball, whose throw it is, and the darts of the current turn — and
+   the phone collapses to a simplified entry-only UI. Multiple TVs can
+   join the same code; the code stays active across games, and tapping
+   Stop on the phone sends every TV back to its code-entry screen. A
+   hide/show board toggle on the TV switches between the scoreboard-
+   plus-dartboard layout and a score-only view with extra-large numbers
+   (remembered per TV). Sync runs over Supabase Realtime broadcast (no login needed on
+   the TV, nothing written to the database).
+5. **Score the game** on the live screen. Cricket shows the classic marks
    grid, points, a **live MPR column**, and the current **round number**;
    there's full undo (per dart and per turn) and a dartboard heat view of the
    turn. Solo games are practice and are not saved.
-4. **Finish** — the winner is detected automatically, Elo is updated pairwise
+6. **Finish** — the winner is detected automatically, Elo is updated pairwise
    (winner vs each loser), and a `game_results` row is inserted per player.
-5. **Browse stats** — Leaderboard (sortable by Elo/X01/Cricket MPR), Profiles
+7. **Browse stats** — Leaderboard (sortable by Elo/X01/Cricket MPR), Profiles
    (trend charts + per-game history), Matchup (Elo win probability +
    head-to-head), Insights (AI questions), and your Player Card.
 
@@ -189,6 +246,7 @@ Model names drift; if a default ever errors, set `AI_MODEL` to a current one.
 cp .env.example .env.local   # fill in Supabase values + AI_PROVIDER + the key
 npm install
 npm run dev                  # http://localhost:3000
+npm test                     # scoring-core + parser + conformance suite
 ```
 
 ## 5. Deploy to Vercel
@@ -235,6 +293,7 @@ app/
   globals.css             design system (themes, cards, cricket table, nav)
   api/insights/route.js   server-side AI call (secret key lives here)
   api/admin/route.js      admin actions via Supabase service role
+  tv/page.js              TV scoreboard: code entry + live big-screen views
 components/
   Auth.js                 sign in / sign up
   Home.js                 landing view + top players
@@ -249,15 +308,25 @@ components/
   Insights.js             AI Q&A over league stats
   Account.js              profile settings, theme, font scale
   Admin.js                admin panel (accounts, players, resets)
-  Charts.js               dependency-free SVG line chart
+  tv/TVScoreboard.js      big-screen cricket/X01/baseball scoreboards
+  Charts.js               dependency-free SVG line + bar charts
   DartBoard.js            SVG dartboard with highlights/hits
   ui.js                   small shared UI pieces
 lib/
   supabase.js             Supabase client
+  cast.js                 TV-cast transport (Realtime broadcast + local)
+  darts.js                shared dart/mark formatting helpers
   db.js                   data access (players, game_results)
   stats.js                Elo math, career stats, timelines, head-to-head
   constants.js            targets, cricket values, Elo constants, accents
   prefs.js                font-scale preference
+  prodigy/parser.js       Prodigy D9000W board protocol parser
+packages/
+  scoring-core/           pure event-sourced scoring reducer (x01,
+                          cricket, baseball) for the hardware bridge
+tests/                    node --test suite: reducer units, parser units,
+                          app-vs-reducer conformance fixtures (npm test)
+tools/                    Prodigy capture/inventory scripts (see tools/README.md)
 supabase/
   schema.sql              run once in the Supabase SQL editor
   migration-*.sql         historical one-off migrations (already applied)

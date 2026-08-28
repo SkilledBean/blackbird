@@ -549,3 +549,648 @@ label.check input {
   height: 17px;
   accent-color: var(--accent);
 }
+
+/* ---------- loading screen ---------- */
+.load-wrap {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+.load-title {
+  font-family: var(--font-display-stack);
+  font-weight: 800;
+  font-size: calc(40px * var(--fs-chrome));
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  animation: load-up 0.5s ease both;
+}
+.load-sub {
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: calc(11px * var(--fs-chrome));
+  font-weight: 700;
+  color: var(--muted);
+  animation: load-up 0.5s 0.1s ease both;
+}
+.load-spinner {
+  width: 54px;
+  height: 54px;
+  margin-top: 30px;
+  display: block;
+  color: var(--ink);
+  animation: load-fade 0.5s 0.2s ease both, load-spin 1.4s linear infinite;
+}
+@keyframes load-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.load-status {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: calc(13px * var(--fs-chrome));
+  animation: load-up 0.5s 0.3s ease both;
+}
+@keyframes load-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes load-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .load-title,
+  .load-sub,
+  .load-spinner,
+  .load-status {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ---------- larger screens (tablets / desktop) ---------- */
+@media (min-width: 900px) {
+  .container {
+    max-width: 960px;
+    padding: 28px 24px 32px;
+  }
+  .nav {
+    max-width: 920px;
+  }
+}
+
+/* chart cards: single column on phones, two-up on wide screens */
+.charts-2col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.charts-2col > .card {
+  margin-bottom: 0;
+}
+@media (min-width: 900px) {
+  .charts-2col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------- tv scoreboard (/tv) ---------- */
+.tv {
+  height: 100vh;
+  height: 100svh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 2.5vw 4vw;
+}
+.tv-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.2vw;
+}
+.tv-title {
+  font-family: var(--font-display-stack);
+  font-weight: 800;
+  font-size: clamp(40px, 7vw, 120px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.tv-sub {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  font-size: clamp(12px, 1.6vw, 26px);
+  font-weight: 700;
+}
+.tv-join {
+  display: flex;
+  gap: 1vw;
+  margin-top: 2vw;
+}
+.tv-input {
+  font-family: var(--font-body-stack);
+  font-size: clamp(24px, 3.4vw, 56px);
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  text-align: center;
+  width: min(44vw, 340px);
+  background: var(--surface);
+  color: var(--ink);
+  border: 2px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 0.35em 0.1em 0.35em 0.45em;
+  outline: none;
+}
+.tv-input:focus {
+  border-color: var(--accent);
+}
+.tv-btn {
+  font-family: inherit;
+  font-size: clamp(18px, 2.2vw, 36px);
+  font-weight: 700;
+  padding: 0.5em 1.2em;
+  border-radius: 14px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+.tv-btn:disabled {
+  opacity: 0.4;
+}
+.tv-help {
+  margin-top: 3vw;
+  color: var(--muted);
+  font-size: clamp(13px, 1.5vw, 24px);
+  line-height: 1.6;
+}
+.tv-help p {
+  margin: 0.15em 0;
+}
+.tv-board {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.2vw;
+}
+.tv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-display-stack);
+  font-weight: 800;
+  font-size: clamp(20px, 3vw, 54px);
+}
+.tv-header span:last-child {
+  color: var(--ink-soft);
+  font-size: clamp(16px, 2.2vw, 40px);
+}
+.tv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(20px, 3.4vw, 64px);
+}
+.tv-table th {
+  font-size: clamp(12px, 1.7vw, 30px);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 0.3em 0.2em;
+  text-align: center;
+}
+.tv-table td {
+  padding: 0.3em 0.2em;
+  text-align: center;
+}
+.tv-table tr.active {
+  background: var(--accent-soft);
+}
+.tv-name {
+  text-align: left !important;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.tv-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.tv-muted {
+  color: var(--muted);
+}
+.tv-x01-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--tv-players, 2), 1fr);
+  gap: 2vw;
+}
+.tv-x01-card {
+  background: var(--surface);
+  border: 0.25vw solid var(--line);
+  border-radius: 24px;
+  padding: 2vw;
+  text-align: center;
+}
+.tv-x01-card.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.tv-x01-name {
+  font-weight: 800;
+  font-size: clamp(18px, 2.6vw, 48px);
+}
+.tv-x01-score {
+  font-weight: 800;
+  font-size: clamp(64px, 12vw, 240px);
+  line-height: 1.02;
+  font-variant-numeric: tabular-nums;
+}
+.tv-x01-sub {
+  color: var(--muted);
+  font-size: clamp(13px, 1.6vw, 28px);
+}
+.tv-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2vw;
+  text-align: center;
+  color: var(--muted);
+  font-size: clamp(12px, 1.4vw, 22px);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding-top: 1vw;
+}
+.tv-winner-label {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--muted);
+  font-size: clamp(16px, 2vw, 36px);
+  font-weight: 700;
+}
+.tv-winner-name {
+  font-family: var(--font-display-stack);
+  font-weight: 800;
+  font-size: clamp(56px, 11vw, 220px);
+  line-height: 1.05;
+}
+.tv-idle-sub {
+  color: var(--ink-soft);
+  font-size: clamp(16px, 2vw, 36px);
+}
+.tv-code {
+  color: var(--accent);
+  font-weight: 800;
+  letter-spacing: 0.25em;
+}
+
+/* tv: scoreboard + live dartboard side by side */
+.tv-split {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr minmax(240px, 30vw);
+  gap: 3vw;
+  align-items: center;
+  min-height: 0;
+}
+.tv-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2.2vw;
+  min-width: 0;
+}
+.tv-boardwrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tv-boardwrap svg {
+  width: 100%;
+  height: auto;
+  max-height: 78vh;
+}
+/* portrait / narrow screens: board tucks under the scoreboard */
+@media (max-aspect-ratio: 1/1) {
+  .tv-split {
+    grid-template-columns: 1fr;
+  }
+  .tv-boardwrap svg {
+    max-width: 60vw;
+  }
+}
+
+/* tv style toggle + score-only display */
+.tv-style-btn {
+  font-family: inherit;
+  background: none;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 0.3em 0.9em;
+  font-size: clamp(12px, 1.4vw, 22px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tv-style-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+.tv-scoreonly .tv-split {
+  grid-template-columns: 1fr;
+}
+.tv-scoreonly .tv-boardwrap {
+  display: none;
+}
+.tv-scoreonly .tv-table {
+  font-size: clamp(24px, 5vw, 110px);
+}
+.tv-scoreonly .tv-table th {
+  font-size: clamp(14px, 2vw, 40px);
+}
+.tv-scoreonly .tv-x01-score {
+  font-size: clamp(80px, 17vw, 340px);
+}
+.tv-scoreonly .tv-x01-name {
+  font-size: clamp(24px, 3.4vw, 64px);
+}
+.tv-scoreonly .tv-x01-sub {
+  font-size: clamp(16px, 2vw, 40px);
+}
+
+/* ============ experimental skins (admin theme lab) ============
+   Full-app looks selectable from the admin panel, stored per-account.
+   Each skin owns the complete palette + component geometry, overriding
+   whatever data-theme is active. Kept last in the file so equal-
+   specificity rules win. */
+
+/* --- Anduril: defense-console. Near-black, squared, monochrome. --- */
+[data-skin="anduril"] {
+  --bg: #08090b;
+  --surface: #0e1114;
+  --surface-2: #14181d;
+  --ink: #e9edf1;
+  --ink-soft: #9aa4ad;
+  --muted: #5f6870;
+  --line: #22282e;
+  --line-strong: #39424a;
+  --accent: #e9edf1;
+  --accent-hover: #c4ccd3;
+  --accent-soft: rgba(233, 237, 241, 0.08);
+  --red: #ff4d3d;
+  --amber: #ffb000;
+  --radius: 2px;
+  --radius-sm: 2px;
+  --shadow: none;
+}
+[data-skin="anduril"] .app {
+  background: var(--bg);
+}
+[data-skin="anduril"] .brand-title {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: calc(20px * var(--fs-chrome));
+  font-weight: 700;
+}
+[data-skin="anduril"] .section-title {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: calc(12px * var(--fs));
+  color: var(--ink-soft);
+}
+[data-skin="anduril"] .tag {
+  letter-spacing: 0.2em;
+}
+[data-skin="anduril"] .btn,
+[data-skin="anduril"] .chip {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: calc(12.5px * var(--fs));
+  font-weight: 700;
+}
+[data-skin="anduril"] .btn-primary,
+[data-skin="anduril"] .btn-amber {
+  color: #08090b;
+}
+[data-skin="anduril"] .btn-toggle-on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #08090b;
+}
+[data-skin="anduril"] .nav {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+[data-skin="anduril"] .navbtn {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: calc(11px * var(--fs-chrome));
+}
+[data-skin="anduril"] .navbtn.active {
+  background: var(--ink);
+  color: #08090b;
+}
+[data-skin="anduril"] .card {
+  box-shadow: none;
+}
+
+/* --- Airbnb: warm, friendly, rounded. White + coral, pill buttons. --- */
+[data-skin="airbnb"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f7f7f7;
+  --ink: #222222;
+  --ink-soft: #6a6a6a;
+  --muted: #b0b0b0;
+  --line: #ebebeb;
+  --line-strong: #dddddd;
+  --accent: #ff385c;
+  --accent-hover: #e31c5f;
+  --accent-soft: rgba(255, 56, 92, 0.09);
+  --red: #c13515;
+  --amber: #ffb400;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 10px 30px rgba(0, 0, 0, 0.08);
+  --font-display-stack: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+[data-skin="airbnb"] .app {
+  background: var(--bg);
+}
+[data-skin="airbnb"] .brand-title {
+  color: var(--accent);
+}
+[data-skin="airbnb"] .card {
+  border-color: transparent;
+}
+[data-skin="airbnb"] .btn {
+  border-radius: 999px;
+}
+[data-skin="airbnb"] .btn-primary {
+  background: linear-gradient(90deg, #e61e4d 0%, #d70466 100%);
+  border-color: transparent;
+}
+[data-skin="airbnb"] .chip {
+  border-radius: 14px;
+}
+[data-skin="airbnb"] .nav {
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+[data-skin="airbnb"] .navbtn {
+  border-radius: 999px;
+}
+[data-skin="airbnb"] .navbtn.active {
+  background: #222222;
+  color: #ffffff;
+}
+[data-skin="airbnb"] .stat,
+[data-skin="airbnb"] .mini {
+  border-color: transparent;
+  background: var(--surface-2);
+}
+
+/* --- Uber: black-and-white utility. Sharp, bold, high contrast. --- */
+[data-skin="uber"] {
+  --bg: #f6f6f6;
+  --surface: #ffffff;
+  --surface-2: #eeeeee;
+  --ink: #000000;
+  --ink-soft: #545454;
+  --muted: #a6a6a6;
+  --line: #e2e2e2;
+  --line-strong: #c9c9c9;
+  --accent: #000000;
+  --accent-hover: #333333;
+  --accent-soft: rgba(0, 0, 0, 0.07);
+  --red: #de1135;
+  --amber: #b28900;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow: none;
+  --font-display-stack: "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body-stack: "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+[data-skin="uber"] .app {
+  background: var(--bg);
+}
+[data-skin="uber"] .brand-title {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+[data-skin="uber"] .section-title {
+  font-weight: 800;
+}
+[data-skin="uber"] .card {
+  box-shadow: none;
+}
+[data-skin="uber"] .btn {
+  border-radius: 8px;
+  font-weight: 700;
+}
+[data-skin="uber"] .btn-primary {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+[data-skin="uber"] .chip {
+  border-radius: 8px;
+  background: var(--surface-2);
+  border-color: transparent;
+}
+[data-skin="uber"] .nav {
+  border-radius: 12px;
+}
+[data-skin="uber"] .navbtn.active {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* ---------- seasonal loading-screen flourishes ---------- */
+.load-fx {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.load-wrap {
+  position: relative;
+  z-index: 2;
+}
+.load-title {
+  position: relative;
+}
+.load-hat {
+  position: absolute;
+  width: calc(30px * var(--fs-chrome));
+  height: calc(30px * var(--fs-chrome));
+  left: calc(-9px * var(--fs-chrome));
+  top: calc(-20px * var(--fs-chrome));
+  transform: rotate(-20deg);
+  animation: load-up 0.5s 0.3s ease both;
+}
+.load-confetti {
+  position: absolute;
+  top: -4vh;
+  border-radius: 2px;
+  animation-name: load-confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes load-confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(110vh) rotate(660deg);
+  }
+}
+.load-flake {
+  position: absolute;
+  top: -4vh;
+  border-radius: 50%;
+  background: #a9b8c8;
+  animation-name: load-snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+[data-theme="dark"] .load-flake,
+[data-theme="glass"] .load-flake,
+[data-skin="anduril"] .load-flake {
+  background: #ffffff;
+}
+@keyframes load-snow-fall {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(55vh) translateX(2.5vw);
+  }
+  100% {
+    transform: translateY(110vh) translateX(-1.5vw);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .load-fx {
+    display: none;
+  }
+  .load-hat {
+    animation: none;
+    opacity: 1;
+  }
+}

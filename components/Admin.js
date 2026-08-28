@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { BackBar } from "./ui";
 import { supabase } from "@/lib/supabase";
+import { SKINS } from "@/lib/skins";
 
 async function callAdmin(payload) {
   const {
@@ -35,6 +36,28 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
   const [ok, setOk] = useState("");
   const [busy, setBusy] = useState("");
   const [newName, setNewName] = useState("");
+  const [skin, setSkin] = useState("default");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSkin(data?.session?.user?.user_metadata?.skin || "default");
+    });
+  }, []);
+
+  // Experimental skin, stored only on THIS account's user_metadata — other
+  // players keep the normal look. Full reload so the whole app re-renders
+  // in the new skin.
+  const pickSkin = async (id) => {
+    setBusy("skin");
+    try {
+      const { error } = await supabase.auth.updateUser({ data: { skin: id } });
+      if (error) throw error;
+      window.location.reload();
+    } catch (e) {
+      setErr(e.message || "Could not switch theme.");
+      setBusy("");
+    }
+  };
 
   const load = useCallback(async () => {
     setErr("");
@@ -186,6 +209,33 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
           <p className="subtle" style={{ margin: 0, color: "var(--accent)" }}>{ok}</p>
         </div>
       )}
+
+      {/* ---------- Theme lab (this account only) ---------- */}
+      <div className="card mb-12">
+        <div className="tag" style={{ marginBottom: 4 }}>Theme lab — experimental</div>
+        <p className="subtle" style={{ marginTop: 4 }}>
+          Try a full app look: colors, shapes, fonts, and layout. Applies only to your
+          account and reloads the app when selected.
+        </p>
+        <div className="grid-4">
+          {SKINS.map((s) => (
+            <button
+              key={s.id}
+              className={`btn ${skin === s.id ? "btn-toggle-on" : ""}`}
+              disabled={busy === "skin" || skin === s.id}
+              title={s.blurb}
+              onClick={() => pickSkin(s.id)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+        {skin !== "default" && (
+          <div className="tag" style={{ marginTop: 10, textTransform: "none", letterSpacing: 0 }}>
+            Active: {SKINS.find((s) => s.id === skin)?.label} — {SKINS.find((s) => s.id === skin)?.blurb}
+          </div>
+        )}
+      </div>
 
       {!data ? (
         <div className="card">

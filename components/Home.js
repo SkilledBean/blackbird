@@ -1,8 +1,34 @@
 import { Stat } from "./ui";
+import { BarChart } from "./Charts";
 import { BASE_ELO } from "@/lib/constants";
 
-export default function Home({ setView, stats, elo, players, gameCount, openProfile }) {
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const WEEKS = 13; // ~3 months
+
+/** Unique games per week over the last ~3 months, oldest bucket first. */
+function gamesPerWeek(results) {
+  const seen = new Map(); // gameId -> completion date
+  for (const r of results) {
+    if (r.gameId && !seen.has(r.gameId)) seen.set(r.gameId, new Date(r.completedAt));
+  }
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1); // tomorrow 00:00
+  const buckets = Array.from({ length: WEEKS }, (_, i) => ({
+    x: i + 1,
+    y: 0,
+    date: new Date(end.getTime() - (WEEKS - i) * WEEK_MS).toISOString(),
+  }));
+  for (const d of seen.values()) {
+    const weeksAgo = Math.floor((end.getTime() - d.getTime()) / WEEK_MS);
+    const idx = WEEKS - 1 - weeksAgo;
+    if (idx >= 0 && idx < WEEKS) buckets[idx].y++;
+  }
+  return buckets;
+}
+
+export default function Home({ setView, stats, elo, players, gameCount, results, openProfile }) {
   const visible = players.filter((p) => !p.hidden);
+  const weekly = gamesPerWeek(results || []);
   const ranked = visible
     .map((p) => ({ u: p.username, elo: elo[p.username] || BASE_ELO, s: stats[p.username] }))
     .sort((a, b) => b.elo - a.elo);
@@ -17,6 +43,11 @@ export default function Home({ setView, stats, elo, players, gameCount, openProf
         <Stat label="Players" value={visible.length} />
         <Stat label="Games" value={gameCount} />
         <Stat label="Top avg" value={topAvg ? topAvg.toFixed(1) : "—"} />
+      </div>
+
+      <div className="card mb-12">
+        <h3 className="section-title">Games · last 3 months</h3>
+        <BarChart data={weekly} />
       </div>
 
       <button

@@ -1,0 +1,1057 @@
+{
+  "generatedBy": "verify-conformance harness (app UI capture)",
+  "scenarios": [
+    {
+      "name": "x01-301-doubleout-bust-and-bull-checkout",
+      "gameType": "x01",
+      "config": {
+        "startScore": 301,
+        "doubleOut": true
+      },
+      "players": [
+        "Matt",
+        "Sam"
+      ],
+      "events": [
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 19,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 17,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 10,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 14,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 25,
+            "mult": 2
+          }
+        }
+      ],
+      "expected": {
+        "winner": "Sam",
+        "perPlayer": {
+          "Matt": {
+            "dartsThrown": 6,
+            "pointsScored": 180,
+            "highestTurn": 180,
+            "checkout": 0,
+            "finalScore": 121,
+            "darts": [
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 17,
+                "mult": 3
+              },
+              {
+                "n": 10,
+                "mult": 1
+              }
+            ],
+            "dartPos": [
+              {
+                "sum": 60,
+                "count": 2
+              },
+              {
+                "sum": 60,
+                "count": 2
+              },
+              {
+                "sum": 60,
+                "count": 2
+              }
+            ]
+          },
+          "Sam": {
+            "dartsThrown": 6,
+            "pointsScored": 301,
+            "highestTurn": 177,
+            "checkout": 124,
+            "finalScore": 0,
+            "darts": [
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 19,
+                "mult": 3
+              },
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 14,
+                "mult": 1
+              },
+              {
+                "n": 25,
+                "mult": 2
+              }
+            ],
+            "dartPos": [
+              {
+                "sum": 120,
+                "count": 2
+              },
+              {
+                "sum": 74,
+                "count": 2
+              },
+              {
+                "sum": 107,
+                "count": 2
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "cricket-standard-close-score-dead",
+      "gameType": "cricket",
+      "config": {
+        "variant": "standard"
+      },
+      "players": [
+        "Matt",
+        "Sam"
+      ],
+      "events": [
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 25,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.end-turn"
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.end-turn"
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 20,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.end-turn"
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 19,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 18,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 17,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.end-turn"
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 19,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.end-turn"
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 17,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 17,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 16,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.end-turn"
+        },
+        {
+          "type": "game.end-turn"
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 15,
+            "mult": 3
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 25,
+            "mult": 2
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 25,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.end-turn"
+        }
+      ],
+      "expected": {
+        "winner": "Sam",
+        "perPlayer": {
+          "Matt": {
+            "marks": 10,
+            "rounds": 4,
+            "roundMarks": [
+              7,
+              0,
+              3,
+              0
+            ],
+            "mpr": 2.5,
+            "pointsScored": 60,
+            "darts": [
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 25,
+                "mult": 1
+              },
+              {
+                "n": 20,
+                "mult": 1
+              },
+              {
+                "n": 19,
+                "mult": 3
+              }
+            ]
+          },
+          "Sam": {
+            "marks": 27,
+            "rounds": 4,
+            "roundMarks": [
+              3,
+              9,
+              9,
+              6
+            ],
+            "mpr": 6.75,
+            "pointsScored": 102,
+            "darts": [
+              {
+                "n": 20,
+                "mult": 3
+              },
+              {
+                "n": 19,
+                "mult": 3
+              },
+              {
+                "n": 18,
+                "mult": 3
+              },
+              {
+                "n": 17,
+                "mult": 3
+              },
+              {
+                "n": 17,
+                "mult": 3
+              },
+              {
+                "n": 17,
+                "mult": 3
+              },
+              {
+                "n": 16,
+                "mult": 3
+              },
+              {
+                "n": 15,
+                "mult": 3
+              },
+              {
+                "n": 25,
+                "mult": 2
+              },
+              {
+                "n": 25,
+                "mult": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "baseball-nine-innings",
+      "gameType": "baseball",
+      "config": {},
+      "players": [
+        "Matt",
+        "Sam"
+      ],
+      "events": [
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 1,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 2,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 3,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 3,
+            "mult": 2
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 4,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 5,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 6,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 7,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 8,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 9,
+            "mult": 1
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        },
+        {
+          "type": "game.dart",
+          "dart": {
+            "n": 0,
+            "mult": 0
+          }
+        }
+      ],
+      "expected": {
+        "winner": "Matt",
+        "perPlayer": {
+          "Matt": {
+            "runs": 9,
+            "darts": [
+              {
+                "n": 1,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 2,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 3,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 4,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 5,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 6,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 7,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 8,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 9,
+                "mult": 1
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              }
+            ]
+          },
+          "Sam": {
+            "runs": 2,
+            "darts": [
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 3,
+                "mult": 2
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              },
+              {
+                "n": 0,
+                "mult": 0
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

@@ -6,7 +6,9 @@ import { getPlayers, addPlayer as dbAddPlayer, setPlayerHidden as dbSetPlayerHid
 import { computeStats, eloMapFromPlayers, applyEloUpdate } from "@/lib/stats";
 import { ACCENTS, ADMIN_EMAIL } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
-import { Logo, GearIcon } from "@/components/ui";
+import { applySkin } from "@/lib/skins";
+import { makeCastCode, openCastChannel, castAvailable, stripHistory } from "@/lib/cast";
+import { Logo, GearIcon, CastIcon } from "@/components/ui";
 import Auth from "@/components/Auth";
 import Home from "@/components/Home";
 import Setup from "@/components/Setup";
@@ -19,10 +21,19 @@ import Matchup from "@/components/Matchup";
 import Insights from "@/components/Insights";
 import Account from "@/components/Account";
 import Admin from "@/components/Admin";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Page() {
   const [authReady, setAuthReady] = useState(false);
   const [session, setSession] = useState(null);
+
+  // Branded splash: hold the loading screen 1–3 s on every open so the app
+  // always launches with a moment of perceived loading.
+  const [splashDone, setSplashDone] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setSplashDone(true), 1000 + Math.random() * 2000);
+    return () => clearTimeout(t);
+  }, []);
 
   const [dataReady, setDataReady] = useState(false);
   const [players, setPlayers] = useState([]);
@@ -32,8 +43,92 @@ export default function Page() {
   const [view, setView] = useState("home");
   const [live, setLive] = useState(null);
   const liveProgress = useRef(null);
+
+  // ---- live-game persistence: a page reload no longer loses the leg ----
+  // Scoped to the signed-in account (a shared device never hands one
+  // user's game to another). The undo history is stripped before writing:
+  // it grows quadratically and in-session resume keeps it in memory.
+  const LIVE_KEY = "bb-live-game";
+  const sessionUserIdRef = useRef(null);
+  // true from finishMatch/quit until the next game starts; blocks the play
+  // component's trailing onProgress (fired while finishMatch awaits the
+  // network) from resurrecting the cleared key or re-arming the cast timer
+  const finishingRef = useRef(false);
+  const restoredForUser = useRef(null);
+
+  const persistLive = useCallback((game, progress) => {
+    const uid = sessionUserIdRef.current;
+    if (!uid) return;
+    try {
+      if (game) {
+        window.localStorage.setItem(LIVE_KEY, JSON.stringify({ userId: uid, game, progress: stripHistory(progress) }));
+      } else {
+        window.localStorage.removeItem(LIVE_KEY);
+      }
+    } catch {}
+  }, []);
+
+  // ---- TV casting: broadcast live game state to /tv screens ----
+  const [castCode, setCastCode] = useState(null);
+  const castChannel = useRef(null);
+  const liveGameRef = useRef(null);
+  const castTimer = useRef(null);
+  const lastCastAt = useRef(0);
+
+  const sendCastState = useCallback(() => {
+    if (!castChannel.current || !liveGameRef.current || !liveProgress.current) return;
+    castChannel.current.send("state", {
+      game: liveGameRef.current,
+      snapshot: stripHistory(liveProgress.current),
+    });
+  }, []);
+
   const saveProgress = useCallback((p) => {
+    if (finishingRef.current) return; // trailing update after finish/quit
     liveProgress.current = p;
+    persistLive(liveGameRef.current, p);
+    if (!castChannel.current) return;
+    const wait = Math.max(0, 200 - (Date.now() - lastCastAt.current));
+    if (castTimer.current) clearTimeout(castTimer.current);
+    castTimer.current = setTimeout(() => {
+      lastCastAt.current = Date.now();
+      sendCastState();
+    }, wait);
+  }, [sendCastState, persistLive]);
+
+  const toggleCast = useCallback(() => {
+    if (castChannel.current) {
+      // "stopped" (not "ended") sends TVs back to their code-entry screen
+      castChannel.current.send("stopped", {});
+      castChannel.current.close();
+      castChannel.current = null;
+      setCastCode(null);
+      return;
+    }
+    const code = makeCastCode();
+    const ch = openCastChannel(code, (event) => {
+      // a late-joining TV asks for state; answer with the live snapshot,
+      // or an explicit "ended" so it knows the code is right but nothing
+      // is being played yet
+      if (event === "hello") {
+        if (liveGameRef.current && liveProgress.current) sendCastState();
+        else castChannel.current && castChannel.current.send("ended", {});
+      }
+    });
+    if (!ch) return;
+    castChannel.current = ch;
+    setCastCode(code);
+  }, [sendCastState]);
+
+  useEffect(() => {
+    liveGameRef.current = live;
+  }, [live]);
+
+  useEffect(() => {
+    return () => {
+      if (castTimer.current) clearTimeout(castTimer.current);
+      if (castChannel.current) castChannel.current.close();
+    };
   }, []);
   const [profileUser, setProfileUser] = useState(null);
   const [notice, setNotice] = useState("");
@@ -51,6 +146,30 @@ export default function Page() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    sessionUserIdRef.current = session?.user?.id || null;
+  }, [session]);
+
+  // restore a persisted live game for THIS account, once per sign-in
+  useEffect(() => {
+    const uid = session?.user?.id;
+    if (!uid || live || restoredForUser.current === uid) return;
+    restoredForUser.current = uid;
+    try {
+      const raw = window.localStorage.getItem(LIVE_KEY);
+      if (!raw) return;
+      const { userId, game, progress } = JSON.parse(raw);
+      if (userId !== uid) return; // someone else's leg on a shared device
+      if (game && game.gameType && Array.isArray(game.players)) {
+        liveProgress.current = progress || null;
+        liveGameRef.current = game;
+        setLive(game);
+        setNotice("Live game restored — open Play to continue.");
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, live]);
+
   // apply theme + accent color from the user's saved preferences
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -58,8 +177,15 @@ export default function Page() {
     document.documentElement.dataset.theme = ["dark", "glass"].includes(meta.theme) ? meta.theme : "light";
     const a = meta.accent;
     const accent = a ? (a.charAt(0) === "#" ? a : ACCENTS[a] || ACCENTS.green) : ACCENTS.green;
-    document.documentElement.style.setProperty("--accent", accent);
+    // an active skin owns the whole palette — don't pin the accent inline
+    // over it (inline style would beat the skin's CSS token)
+    if (meta.skin && meta.skin !== "default") {
+      document.documentElement.style.removeProperty("--accent");
+    } else {
+      document.documentElement.style.setProperty("--accent", accent);
+    }
     applyFontScale(meta.fontScale);
+    applySkin(meta.skin);
   }, [session]);
 
   const refresh = useCallback(async () => {
@@ -134,6 +260,16 @@ export default function Page() {
   }, [refresh]);
 
   const finishMatch = useCallback(async (match) => {
+    // block the play component's trailing onProgress (it re-renders while
+    // we await the network below) from resurrecting the persisted game or
+    // re-arming the cast timer after "finished"
+    finishingRef.current = true;
+    if (castTimer.current) clearTimeout(castTimer.current);
+    liveProgress.current = null;
+    persistLive(null);
+    if (castChannel.current) {
+      castChannel.current.send("finished", { game: liveGameRef.current, winner: match.winner });
+    }
     if (match.players.length >= 2) {
       const winner = match.winner;
       const nextElo = applyEloUpdate(elo, match.players, winner);
@@ -175,8 +311,13 @@ export default function Page() {
   };
 
   const quit = () => {
-    setLive(null);
+    finishingRef.current = true;
+    if (castTimer.current) clearTimeout(castTimer.current);
     liveProgress.current = null;
+    persistLive(null);
+    if (castChannel.current) castChannel.current.send("ended", {});
+    setLive(null);
+    setNotice("");
     setView("home");
   };
 
@@ -200,7 +341,7 @@ export default function Page() {
     );
   }
 
-  if (!authReady) return <LoadingScreen text="starting up…" />;
+  if (!authReady || !splashDone) return <LoadingScreen text="starting up…" />;
   if (!session) return <Auth />;
   if (!dataReady) return <LoadingScreen text="loading…" />;
 
@@ -254,7 +395,7 @@ export default function Page() {
         )}
 
         {view === "home" && (
-          <Home setView={setView} stats={stats} elo={elo} players={players} gameCount={gameCount} openProfile={openProfile} />
+          <Home setView={setView} stats={stats} elo={elo} players={players} gameCount={gameCount} results={results} openProfile={openProfile} />
         )}
         {view === "setup" && (
           <Setup
@@ -262,7 +403,12 @@ export default function Page() {
             addPlayer={addPlayer}
             me={session.user?.user_metadata?.display_name || ""}
             onStart={(game) => {
+              finishingRef.current = false;
               liveProgress.current = null;
+              // sync the ref now: the play component's first onProgress fires
+              // before the ref-syncing effect on this same commit
+              liveGameRef.current = game;
+              persistLive(game, null);
               setLive(game);
               setView(
                 game.gameType === "x01" ? "playX01" : game.gameType === "cricket" ? "playCricket" : "playBaseball"
@@ -271,9 +417,34 @@ export default function Page() {
             back={() => setView("home")}
           />
         )}
-        {view === "playX01" && live && <PlayX01 game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} />}
-        {view === "playCricket" && live && <PlayCricket game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} />}
-        {view === "playBaseball" && live && <PlayBaseball game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} />}
+        {["playX01", "playCricket", "playBaseball"].includes(view) && live && castAvailable() && (
+          <div className="card pad-sm mb-12" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {castCode ? (
+              <>
+                <CastIcon />
+                <span className="tag" style={{ letterSpacing: 0, textTransform: "none" }}>TV code</span>
+                <span className="num" style={{ fontSize: "calc(17px * var(--fs))", letterSpacing: "0.25em" }}>{castCode}</span>
+                <span className="tag" style={{ flex: 1, letterSpacing: 0, textTransform: "none", textAlign: "right" }}>
+                  open {typeof window !== "undefined" ? window.location.host : ""}/tv
+                </span>
+                <button className="btn" style={{ padding: "6px 12px" }} onClick={toggleCast}>
+                  Stop
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+                onClick={toggleCast}
+              >
+                <CastIcon /> Cast to TV
+              </button>
+            )}
+          </div>
+        )}
+        {view === "playX01" && live && <PlayX01 game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playCricket" && live && <PlayCricket game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
+        {view === "playBaseball" && live && <PlayBaseball game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} />}
         {view === "leaderboard" && (
           <Leaderboard usernames={visibleUsernames} stats={stats} elo={elo} openProfile={openProfile} back={() => setView("home")} />
         )}
@@ -322,16 +493,6 @@ export default function Page() {
         <button className={`navbtn ${view === "matchup" ? "active" : ""}`} onClick={() => setView("matchup")}>Matchup</button>
         <button className={`navbtn ${view === "insights" ? "active" : ""}`} onClick={() => setView("insights")}>AI</button>
       </nav>
-    </main>
-  );
-}
-
-function LoadingScreen({ text }) {
-  return (
-    <main className="app">
-      <div className="container" style={{ textAlign: "center", paddingTop: 90 }}>
-        <div className="num" style={{ fontSize: "calc(26px * var(--fs))", color: "var(--muted)" }}>{text}</div>
-      </div>
     </main>
   );
 }

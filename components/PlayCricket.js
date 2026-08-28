@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { X01_TARGETS, CRICKET_VALUE } from "@/lib/constants";
+import { markSymbol } from "@/lib/darts";
 import DartBoard from "./DartBoard";
 
 const numOf = (t) => (t === "B" ? 25 : Number(t));
 
-export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit }) {
+export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit, castActive }) {
   const { players } = game;
   const variant = game.config?.variant || "standard";
 
@@ -136,7 +137,6 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
     });
   };
 
-  const markSymbol = (n) => (n <= 0 ? "" : n === 1 ? "/" : n === 2 ? "✕" : "⊗");
   const variantLabel =
     variant === "cutthroat" ? "Cutthroat" : variant === "noscore" ? "No-score" : "Score";
 
@@ -162,6 +162,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
         </button>
       </div>
 
+      {!castActive && (
       <div className="card pad-sm mb-12" style={{ overflowX: "auto" }}>
         <table className="cricket-table">
           <thead>
@@ -198,6 +199,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
           </tbody>
         </table>
       </div>
+      )}
 
       <div className="card">
         <div className="tag" style={{ marginBottom: 10 }}>
@@ -253,9 +255,11 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
           </button>
         </div>
 
-        <div style={{ marginTop: 14 }}>
-          <DartBoard highlight={openTargets} hits={boardHits} />
-        </div>
+        {!castActive && (
+          <div style={{ marginTop: 14 }}>
+            <DartBoard highlight={openTargets} hits={boardHits} />
+          </div>
+        )}
       </div>
     </div>
   );
