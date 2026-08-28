@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { BackBar } from "./ui";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { headToHead } from "@/lib/stats";
 import { BASE_ELO } from "@/lib/constants";
@@ -28,215 +27,402 @@ function playerRow(u, stats, elo) {
   };
 }
 
+function CopyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5.5" y="1.5" width="9" height="11" rx="2" />
+      <path d="M3.5 5v7.5a2 2 0 002 2H12" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 8.5l3.5 3.5 6.5-7" />
+    </svg>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+      <path d="M3 15l12-6L3 3v5l7 1-7 1v5z" />
+    </svg>
+  );
+}
+
 export default function Insights({ usernames, stats, elo, results, gameCount, back }) {
   const known = usernames.filter((u) => stats[u]);
-  const [kind, setKind] = useState("league");
-  const [a, setA] = useState(known[0] || "");
-  const [b, setB] = useState(known[1] || "");
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState("");
-  const [model, setModel] = useState("");
-  const [error, setError] = useState("");
-  const [question, setQuestion] = useState("");
+  const [copied, setCopied] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [selA, setSelA] = useState(known[0] || "");
+  const [selB, setSelB] = useState(known[1] || known[0] || "");
+  const endRef = useRef(null);
+  const inputRef = useRef(null);
 
-  const buildSummary = () => {
-    if (kind === "player") {
-      const ranked = [...known].sort((x, y) => (elo[y] || BASE_ELO) - (elo[x] || BASE_ELO));
-      return {
-        focusPlayer: playerRow(a, stats, elo),
-        leagueRankOfFocus: ranked.indexOf(a) + 1,
-        leagueSize: known.length,
-        totalGames: gameCount,
-      };
-    }
-    if (kind === "matchup") {
-      const Ra = elo[a] || BASE_ELO;
-      const Rb = elo[b] || BASE_ELO;
-      const h2h = headToHead(results, a, b);
-      return {
-        playerA: playerRow(a, stats, elo),
-        playerB: playerRow(b, stats, elo),
-        eloWinProbabilityA: round(1 / (1 + Math.pow(10, (Rb - Ra) / 400)), 2),
-        headToHead: { aWins: h2h.aw, bWins: h2h.bw, gamesPlayed: h2h.n },
-      };
-    }
-    if (kind === "custom") {
-      const recentGames = (results || []).slice(-200).map((r) => ({
-        gameType: r.gameType,
-        username: r.username,
-        result: r.result,
-        opponents: r.opponents,
-        completedAt: r.completedAt,
-        config: r.config,
-        stats: r.stats,
-      }));
-      return {
-        totalGames: gameCount,
-        players: known.map((u) => playerRow(u, stats, elo)),
-        recentGameResults: recentGames,
-      };
-    }
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, busy]);
+
+  const leagueSummary = () => ({
+    totalGames: gameCount,
+    players: known.map((u) => playerRow(u, stats, elo)),
+  });
+
+  const playerSummary = (player) => {
+    const ranked = [...known].sort((x, y) => (elo[y] || BASE_ELO) - (elo[x] || BASE_ELO));
     return {
+      focusPlayer: playerRow(player, stats, elo),
+      leagueRankOfFocus: ranked.indexOf(player) + 1,
+      leagueSize: known.length,
       totalGames: gameCount,
-      players: known.map((u) => playerRow(u, stats, elo)),
     };
   };
 
-  const buildBody = () => {
-    const base = { kind, summary: buildSummary() };
-    if (kind === "custom") base.question = question;
-    return base;
+  const matchupSummary = (pa, pb) => {
+    const Ra = elo[pa] || BASE_ELO;
+    const Rb = elo[pb] || BASE_ELO;
+    const h2h = headToHead(results, pa, pb);
+    return {
+      playerA: playerRow(pa, stats, elo),
+      playerB: playerRow(pb, stats, elo),
+      eloWinProbabilityA: round(1 / (1 + Math.pow(10, (Rb - Ra) / 400)), 2),
+      headToHead: { aWins: h2h.aw, bWins: h2h.bw, gamesPlayed: h2h.n },
+    };
   };
 
-  const generate = async () => {
+  const customSummary = () => {
+    const recentGames = (results || []).slice(-200).map((r) => ({
+      gameType: r.gameType,
+      username: r.username,
+      result: r.result,
+      opponents: r.opponents,
+      completedAt: r.completedAt,
+      config: r.config,
+      stats: r.stats,
+    }));
+    return {
+      totalGames: gameCount,
+      players: known.map((u) => playerRow(u, stats, elo)),
+      recentGameResults: recentGames,
+    };
+  };
+
+  const send = async (displayText, kind, summary, question) => {
+    const id = Date.now();
+    setMessages((prev) => [...prev, { id, role: "user", content: displayText }]);
+    setInput("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
     setBusy(true);
-    setError("");
-    setResult("");
-    setModel("");
+    setPendingAction(null);
+
     try {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      const body = { kind, summary };
+      if (kind === "custom") body.question = question || displayText;
       const res = await fetch("/api/insights", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token || ""}`,
         },
-        body: JSON.stringify(buildBody()),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
-      setResult(data.text);
-      setModel(data.model || "");
+      setMessages((prev) => [...prev, { id: id + 1, role: "assistant", content: data.text }]);
     } catch (e) {
-      setError(e.message || "Something went wrong.");
-    } finally {
-      setBusy(false);
+      setMessages((prev) => [
+        ...prev,
+        { id: id + 1, role: "assistant", content: e.message || "Something went wrong.", error: true },
+      ]);
+    }
+    setBusy(false);
+  };
+
+  const sendCustom = () => {
+    const text = input.trim();
+    if (!text || busy) return;
+    send(text, "custom", customSummary(), text);
+  };
+
+  const copyMsg = (text, id) => {
+    navigator.clipboard.writeText(text);
+    setCopied(id);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendCustom();
     }
   };
 
-  const canGenerate =
-    known.length > 0 &&
-    (kind === "league" ||
-      (kind === "custom" && question.trim()) ||
-      (kind === "player" && a) ||
-      (kind === "matchup" && a && b && a !== b));
+  const handleInputChange = (e) => {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+  };
+
+  if (known.length === 0) {
+    return (
+      <div className="fade">
+        <div className="between mb-12">
+          <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
+        </div>
+        <p className="subtle">Log a few games first — the AI needs data to analyse.</p>
+      </div>
+    );
+  }
+
+  const empty = messages.length === 0 && !busy;
 
   return (
-    <div className="fade">
-      <BackBar back={back} title="AI Insights" />
+    <div className="fade" style={{ display: "flex", flexDirection: "column", minHeight: "calc(100dvh - 120px)" }}>
+      <div className="between mb-12">
+        <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
+        {messages.length > 0 && (
+          <button
+            className="btn"
+            style={{ padding: "7px 12px" }}
+            onClick={() => {
+              setMessages([]);
+              setPendingAction(null);
+            }}
+          >
+            New Chat
+          </button>
+        )}
+      </div>
 
-      {known.length === 0 ? (
-        <p className="subtle">Log a few games first — the AI needs data to analyse.</p>
-      ) : (
-        <>
-          <div className="card mb-12">
-            <div className="row mb-12">
-              {[
-                ["league", "League"],
-                ["player", "Player"],
-                ["matchup", "Matchup"],
-                ["custom", "Ask"],
-              ].map(([k, l]) => (
-                <button
-                  key={k}
-                  className={`btn ${kind === k ? "btn-primary" : ""}`}
-                  style={{ flex: 1, padding: "10px 6px" }}
-                  onClick={() => {
-                    setKind(k);
-                    setResult("");
-                    setError("");
-                  }}
-                >
-                  {l}
-                </button>
-              ))}
+      <div style={{ flex: 1 }}>
+        {empty && (
+          <div style={{ textAlign: "center", padding: "24px 16px 32px" }}>
+            <div style={{ fontWeight: 700, fontSize: "calc(20px * var(--fs))", marginBottom: 6 }}>
+              Darts Analyst
             </div>
+            <p className="subtle" style={{ margin: "0 0 24px", lineHeight: 1.5 }}>
+              Ask anything about your league. Powered by real stats and game history.
+            </p>
 
-            {kind === "player" && (
-              <select className="select" value={a} onChange={(e) => setA(e.target.value)}>
-                {known.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
-            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 320, margin: "0 auto" }}>
+              <button
+                className="btn"
+                style={{ width: "100%", padding: "12px 16px" }}
+                onClick={() => send("Give me a league overview", "league", leagueSummary())}
+              >
+                League Overview
+              </button>
 
-            {kind === "matchup" && (
-              <div className="row">
-                <select className="select" value={a} onChange={(e) => setA(e.target.value)}>
-                  {known.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </select>
-                <select className="select" value={b} onChange={(e) => setB(e.target.value)}>
-                  {known.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+              <button
+                className="btn"
+                style={{ width: "100%", padding: "12px 16px" }}
+                onClick={() => setPendingAction(pendingAction === "player" ? null : "player")}
+              >
+                Player Profile
+              </button>
+              {pendingAction === "player" && (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <select className="select" style={{ flex: 1 }} value={selA} onChange={(e) => setSelA(e.target.value)}>
+                    {known.map((u) => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn btn-primary"
+                    style={{ padding: "8px 16px" }}
+                    onClick={() => send(`Tell me about ${selA}`, "player", playerSummary(selA))}
+                  >
+                    Go
+                  </button>
+                </div>
+              )}
 
-            {kind === "custom" && (
-              <div>
-                <textarea
-                  className="input"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Ask anything about the league — e.g. 'Who has the best checkout under pressure?' or 'Who's improved most lately?'"
-                  rows={3}
-                  maxLength={600}
-                  style={{ resize: "vertical", lineHeight: 1.5 }}
-                />
-                <p className="tag" style={{ textTransform: "none", letterSpacing: 0, marginTop: 8 }}>
-                  The AI answers using your league&apos;s real stats only.
-                </p>
-              </div>
-            )}
-
-            <button
-              className="btn btn-primary mt-12"
-              style={{ width: "100%", padding: 14 }}
-              onClick={generate}
-              disabled={busy || !canGenerate}
-            >
-              {busy ? "Analysing…" : kind === "custom" ? "Ask" : "Generate Insight"}
-            </button>
-          </div>
-
-          {error && (
-            <div className="card mb-12" style={{ borderColor: "var(--red)" }}>
-              <p className="subtle" style={{ margin: 0, color: "var(--red)" }}>
-                {error}
-              </p>
-            </div>
-          )}
-
-          {result && (
-            <div className="card fade">
-              <p style={{ margin: 0, whiteSpace: "pre-wrap", lineHeight: 1.6 }}>{result}</p>
-              {model && (
-                <div className="tag" style={{ marginTop: 12 }}>
-                  generated by {model}
+              <button
+                className="btn"
+                style={{ width: "100%", padding: "12px 16px" }}
+                onClick={() => setPendingAction(pendingAction === "matchup" ? null : "matchup")}
+              >
+                Head-to-Head
+              </button>
+              {pendingAction === "matchup" && (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <select className="select" style={{ flex: 1 }} value={selA} onChange={(e) => setSelA(e.target.value)}>
+                    {known.map((u) => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                  <select className="select" style={{ flex: 1 }} value={selB} onChange={(e) => setSelB(e.target.value)}>
+                    {known.map((u) => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                  <button
+                    className="btn btn-primary"
+                    style={{ padding: "8px 16px" }}
+                    onClick={() => send(`${selA} vs ${selB}`, "matchup", matchupSummary(selA, selB))}
+                    disabled={selA === selB}
+                  >
+                    Go
+                  </button>
                 </div>
               )}
             </div>
-          )}
+          </div>
+        )}
 
-          {!result && !error && !busy && (
-            <p className="tag" style={{ textTransform: "none", letterSpacing: 0, lineHeight: 1.5 }}>
-              Insights are written by your configured AI provider from the league&apos;s real
-              stats. Pick a focus and generate.
-            </p>
-          )}
-        </>
-      )}
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+              marginBottom: 16,
+            }}
+          >
+            <div
+              style={{
+                maxWidth: "85%",
+                padding: "10px 14px",
+                borderRadius:
+                  msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                background:
+                  msg.role === "user"
+                    ? "var(--accent)"
+                    : msg.error
+                      ? "var(--red-soft)"
+                      : "var(--surface)",
+                color: msg.role === "user" ? "#fff" : msg.error ? "var(--red)" : "var(--ink)",
+                border: msg.role === "user" ? "none" : "1px solid var(--line)",
+                lineHeight: 1.6,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                fontSize: "calc(15px * var(--fs))",
+              }}
+            >
+              {msg.content}
+            </div>
+            {msg.role === "assistant" && !msg.error && (
+              <button
+                onClick={() => copyMsg(msg.content, msg.id)}
+                style={{
+                  marginTop: 4,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: copied === msg.id ? "var(--accent)" : "var(--muted)",
+                  padding: "3px 8px",
+                  borderRadius: 8,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: "calc(12px * var(--fs))",
+                  fontFamily: "inherit",
+                  transition: "color 0.15s",
+                }}
+              >
+                {copied === msg.id ? (
+                  <>
+                    <CheckIcon /> Copied
+                  </>
+                ) : (
+                  <>
+                    <CopyIcon /> Copy
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        ))}
+
+        {busy && (
+          <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 16 }}>
+            <div
+              style={{
+                padding: "14px 20px",
+                borderRadius: "18px 18px 18px 4px",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+              }}
+            >
+              <div className="typing-dots">
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={endRef} />
+      </div>
+
+      <div
+        style={{
+          position: "sticky",
+          bottom: 0,
+          background: "var(--bg)",
+          paddingTop: 8,
+          paddingBottom: 4,
+        }}
+      >
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask about the league..."
+            rows={1}
+            disabled={busy}
+            style={{
+              flex: 1,
+              resize: "none",
+              overflow: "hidden",
+              border: "1px solid var(--line)",
+              borderRadius: 22,
+              padding: "10px 16px",
+              background: "var(--surface)",
+              color: "var(--ink)",
+              fontSize: "calc(15px * var(--fs))",
+              fontFamily: "inherit",
+              outline: "none",
+              lineHeight: 1.4,
+              minHeight: 44,
+              maxHeight: 120,
+            }}
+          />
+          <button
+            onClick={sendCustom}
+            disabled={!input.trim() || busy}
+            aria-label="Send"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              border: "none",
+              background: input.trim() && !busy ? "var(--accent)" : "var(--line)",
+              color: input.trim() && !busy ? "#fff" : "var(--muted)",
+              cursor: input.trim() && !busy ? "pointer" : "default",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "background 0.15s, color 0.15s",
+            }}
+          >
+            <SendIcon />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

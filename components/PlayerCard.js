@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { PlayerBadge } from "./ui";
+import { defaultPlayerColor } from "@/lib/constants";
 
 const FONT = '"Figtree", Arial, sans-serif';
+
+function isLight(hex) {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 160;
+}
 
 function themePalette() {
   const root = typeof window !== "undefined" ? getComputedStyle(document.documentElement) : null;
@@ -12,6 +21,7 @@ function themePalette() {
     return {
       theme,
       accent,
+      bg: "#080c18",
       ink: "#f5f8fc",
       inkSoft: "rgba(245,248,252,0.62)",
       tile: "rgba(255,255,255,0.10)",
@@ -79,7 +89,7 @@ function fitFont(ctx, text, maxWidth, startSize, weight) {
 
 function paintBackground(ctx, W, H, pal) {
   if (pal.theme === "glass") {
-    ctx.fillStyle = "#080c18";
+    ctx.fillStyle = pal.bg;
     ctx.fillRect(0, 0, W, H);
     const blob = (x, y, r, color, alpha) => {
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
@@ -96,7 +106,6 @@ function paintBackground(ctx, W, H, pal) {
     blob(W * 0.08, H * 0.9, 600, "#46beff", 0.4);
     return;
   }
-  // light / dark: solid base + a soft accent glow
   ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, W, H);
   const glow = ctx.createRadialGradient(W * 0.82, 110, 60, W * 0.82, 110, 720);
@@ -108,7 +117,7 @@ function paintBackground(ctx, W, H, pal) {
   ctx.globalAlpha = 1;
 }
 
-function drawCard(user, stats, elo) {
+function drawCard(user, stats, elo, playerColor) {
   const W = 1080;
   const H = 1350;
   const pal = themePalette();
@@ -119,10 +128,10 @@ function drawCard(user, stats, elo) {
 
   paintBackground(ctx, W, H, pal);
 
-  // frame
+  // rounded frame
   ctx.strokeStyle = pal.frame;
   ctx.lineWidth = 2;
-  roundRect(ctx, 40, 40, W - 80, H - 80, 36);
+  roundRect(ctx, 40, 40, W - 80, H - 80, 52);
   ctx.stroke();
 
   const cx = W / 2;
@@ -131,31 +140,43 @@ function drawCard(user, stats, elo) {
   // header
   ctx.fillStyle = pal.accent;
   ctx.font = `800 34px ${FONT}`;
-  ctx.fillText("BLACKBIRD", cx, 150);
+  ctx.fillText("BLACKBIRD", cx, 130);
   ctx.fillStyle = pal.inkSoft;
   ctx.font = `600 24px ${FONT}`;
-  ctx.fillText("DART SCORING", cx, 188);
+  ctx.fillText("DART SCORING", cx, 168);
+
+  // player avatar circle
+  const avatarColor = playerColor || defaultPlayerColor(user);
+  const avatarR = 56;
+  const avatarCY = 250;
+  ctx.beginPath();
+  ctx.arc(cx, avatarCY, avatarR, 0, Math.PI * 2);
+  ctx.fillStyle = avatarColor;
+  ctx.fill();
+  ctx.fillStyle = isLight(avatarColor) ? "#333" : "#fff";
+  ctx.font = `700 54px ${FONT}`;
+  ctx.fillText(user.charAt(0).toUpperCase(), cx, avatarCY + 18);
 
   // player name
   ctx.fillStyle = pal.ink;
-  const nameSize = fitFont(ctx, user, W - 220, 110, "800");
+  const nameSize = fitFont(ctx, user, W - 220, 90, "800");
   ctx.font = `800 ${nameSize}px ${FONT}`;
-  ctx.fillText(user, cx, 360);
+  ctx.fillText(user, cx, 370);
 
   // ELO
   ctx.fillStyle = pal.accent;
-  ctx.font = `800 150px ${FONT}`;
-  ctx.fillText(String(Math.round(elo || 1000)), cx, 540);
+  ctx.font = `800 140px ${FONT}`;
+  ctx.fillText(String(Math.round(elo || 1000)), cx, 530);
   ctx.fillStyle = pal.inkSoft;
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText("ELO RATING", cx, 590);
+  ctx.font = `700 28px ${FONT}`;
+  ctx.fillText("ELO RATING", cx, 575);
 
   // record
   const wins = stats.wins;
   const losses = stats.games - stats.wins;
   ctx.fillStyle = pal.ink;
-  ctx.font = `700 40px ${FONT}`;
-  ctx.fillText(`${wins}-${losses}  ·  ${stats.games} games  ·  ${stats.winPct.toFixed(0)}% win`, cx, 670);
+  ctx.font = `700 38px ${FONT}`;
+  ctx.fillText(`${wins}-${losses}  ·  ${stats.games} games  ·  ${stats.winPct.toFixed(0)}% win`, cx, 650);
 
   // tiles
   const tiles = [
@@ -171,27 +192,27 @@ function drawCard(user, stats, elo) {
   const tileW = (W - 160 - gap) / cols;
   const tileH = 150;
   const startX = 80;
-  const startY = 740;
+  const startY = 720;
   tiles.forEach((t, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
     const x = startX + col * (tileW + gap);
     const y = startY + row * (tileH + gap);
     ctx.fillStyle = pal.tile;
-    roundRect(ctx, x, y, tileW, tileH, 22);
+    roundRect(ctx, x, y, tileW, tileH, 30);
     ctx.fill();
     ctx.strokeStyle = pal.tileBorder;
     ctx.lineWidth = 1.5;
-    roundRect(ctx, x, y, tileW, tileH, 22);
+    roundRect(ctx, x, y, tileW, tileH, 30);
     ctx.stroke();
 
     ctx.textAlign = "left";
     ctx.fillStyle = pal.inkSoft;
-    ctx.font = `700 24px ${FONT}`;
-    ctx.fillText(t[0], x + 28, y + 50);
+    ctx.font = `700 22px ${FONT}`;
+    ctx.fillText(t[0], x + 28, y + 48);
     ctx.fillStyle = pal.ink;
-    ctx.font = `800 56px ${FONT}`;
-    ctx.fillText(String(t[1]), x + 28, y + 116);
+    ctx.font = `800 52px ${FONT}`;
+    ctx.fillText(String(t[1]), x + 28, y + 112);
   });
 
   // footer
@@ -213,7 +234,8 @@ export default function PlayerCard({ user, stats, elo, onOpenAccount, playerColo
     setNote("");
     try {
       await ensureFont();
-      const canvas = drawCard(user, stats, elo);
+      const color = playerColors?.[user] || defaultPlayerColor(user);
+      const canvas = drawCard(user, stats, elo, color);
       const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
       if (!blob) throw new Error("Could not create image.");
       const file = new File([blob], `${user}-blackbird.png`, { type: "image/png" });
@@ -229,7 +251,7 @@ export default function PlayerCard({ user, stats, elo, onOpenAccount, playerColo
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-        setNote("Card downloaded — attach it to a text or message.");
+        setNote("Card saved to downloads.");
       }
     } catch (e) {
       if (e && e.name === "AbortError") {

@@ -30,7 +30,10 @@ function buildPrompt(kind, summary, question) {
     "Write plain prose (no markdown headers or bullet symbols), specific and " +
     "citing the real numbers. Be as thorough as the question needs: a few sentences " +
     "for simple asks, and a full, well-organized answer (up to ~500 words) for " +
-    "complex or multi-part questions. Finish your thought — do not stop mid-sentence.";
+    "complex or multi-part questions. Finish your thought — do not stop mid-sentence. " +
+    "When mentioning dates or times, always format them in a natural, readable way " +
+    "like 'Tuesday, October 9th, 2026 at 10:00 PM'. Never output raw ISO timestamps " +
+    "or date strings like '2026-10-09T22:00:00.000Z'.";
 
   let task;
   if (kind === "custom") {
@@ -53,7 +56,7 @@ function buildPrompt(kind, summary, question) {
 }
 
 async function callAI({ system, user }) {
-  const provider = (process.env.AI_PROVIDER || "gemini").toLowerCase();
+  const provider = (process.env.AI_PROVIDER || "openai").toLowerCase();
   const model = process.env.AI_MODEL || DEFAULT_MODELS[provider];
 
   if (provider === "gemini") {
