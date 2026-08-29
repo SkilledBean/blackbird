@@ -3,6 +3,15 @@ import { BackBar } from "./ui";
 import { supabase } from "@/lib/supabase";
 import { SKINS } from "@/lib/skins";
 
+function PencilIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11.5 1.5l3 3L5 14H2v-3z" />
+      <path d="M9.5 3.5l3 3" />
+    </svg>
+  );
+}
+
 async function callAdmin(payload) {
   const {
     data: { session },
@@ -36,6 +45,8 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
   const [ok, setOk] = useState("");
   const [busy, setBusy] = useState("");
   const [newName, setNewName] = useState("");
+  const [renaming, setRenaming] = useState(null);
+  const [renameTo, setRenameTo] = useState("");
   const [skin, setSkin] = useState("default");
 
   useEffect(() => {
@@ -193,6 +204,25 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
     }
   };
 
+  const renamePlayer = async (oldName) => {
+    const trimmed = renameTo.trim();
+    if (!trimmed || trimmed === oldName) { setRenaming(null); return; }
+    setBusy("p:" + oldName);
+    setErr("");
+    try {
+      await callAdmin({ action: "renamePlayer", oldName, newName: trimmed });
+      flash(`Renamed "${oldName}" to "${trimmed}".`);
+      setRenaming(null);
+      setRenameTo("");
+      await load();
+      refreshData && refreshData();
+    } catch (er) {
+      setErr(er.message);
+    } finally {
+      setBusy("");
+    }
+  };
+
   const setEdit = (id, key, val) => setEdits((prev) => ({ ...prev, [id]: { ...prev[id], [key]: val } }));
 
   return (
@@ -281,13 +311,42 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
             {data.players.map((p) => {
               const s = stats[p.username] || { games: 0, wins: 0, winPct: 0, x01: { threeDartAvg: 0 } };
               const busyHere = busy === "p:" + p.username;
+              const isRenaming = renaming === p.username;
               return (
                 <div className="card" key={p.username}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                    <div style={{ fontWeight: 800, fontSize: "calc(16px * var(--fs))", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {p.username}
-                    </div>
-                    {p.hidden && (
+                    {isRenaming ? (
+                      <div className="row" style={{ flex: 1, minWidth: 0 }}>
+                        <input
+                          className="input"
+                          value={renameTo}
+                          onChange={(e) => setRenameTo(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter") renamePlayer(p.username); if (e.key === "Escape") setRenaming(null); }}
+                          placeholder="New name"
+                          autoFocus
+                          style={{ flex: 1 }}
+                        />
+                        <button className="btn btn-primary" style={{ flex: "none", minWidth: 64 }} disabled={busyHere || !renameTo.trim() || renameTo.trim() === p.username} onClick={() => renamePlayer(p.username)}>
+                          {busyHere ? "…" : "Save"}
+                        </button>
+                        <button className="btn" style={{ flex: "none" }} onClick={() => setRenaming(null)}>Cancel</button>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ fontWeight: 800, fontSize: "calc(16px * var(--fs))", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {p.username}
+                        </div>
+                        <button
+                          className="btn"
+                          style={{ padding: "6px 8px", flex: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+                          onClick={() => { setRenaming(p.username); setRenameTo(p.username); }}
+                          title="Rename player"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </>
+                    )}
+                    {!isRenaming && p.hidden && (
                       <span
                         className="tag"
                         style={{ background: "var(--surface-2)", border: "1px solid var(--line)", padding: "3px 8px", borderRadius: 999 }}

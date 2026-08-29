@@ -131,6 +131,54 @@ export async function POST(req) {
       return json({ ok: true });
     }
 
+    if (action === "renamePlayer") {
+      const { oldName, newName } = body;
+      if (!oldName || !newName) return json({ error: "Missing old or new name." }, 400);
+      const trimmed = newName.trim();
+      if (!trimmed) return json({ error: "Name cannot be blank." }, 400);
+      if (trimmed === oldName) return json({ error: "Name is the same." }, 400);
+
+      const { data: existing } = await admin.from("players").select("username").eq("username", trimmed).maybeSingle();
+      if (existing) return json({ error: `"${trimmed}" already exists.` }, 400);
+
+      const { error: e1 } = await admin.from("players").update({ username: trimmed }).eq("username", oldName);
+      if (e1) throw e1;
+
+      const { error: e2 } = await admin.from("game_results").update({ username: trimmed }).eq("username", oldName);
+      if (e2) throw e2;
+
+      const { error: e3 } = await admin.from("game_results").update({ winner: trimmed }).eq("winner", oldName);
+      if (e3) throw e3;
+
+      const { data: oppRows } = await admin.from("game_results").select("id, opponents").contains("opponents", JSON.stringify([oldName]));
+      if (oppRows && oppRows.length > 0) {
+        for (const row of oppRows) {
+          const updated = (row.opponents || []).map((o) => (o === oldName ? trimmed : o));
+          const { error: e4 } = await admin.from("game_results").update({ opponents: updated }).eq("id", row.id);
+          if (e4) throw e4;
+        }
+      }
+
+      const { data: matchRows } = await admin.from("matches").select("id, players, winner, per_player").contains("players", JSON.stringify([oldName]));
+      if (matchRows && matchRows.length > 0) {
+        for (const row of matchRows) {
+          const upd = {};
+          upd.players = (row.players || []).map((p) => (p === oldName ? trimmed : p));
+          if (row.winner === oldName) upd.winner = trimmed;
+          if (row.per_player && row.per_player[oldName] !== undefined) {
+            const pp = { ...row.per_player };
+            pp[trimmed] = pp[oldName];
+            delete pp[oldName];
+            upd.per_player = pp;
+          }
+          const { error: e5 } = await admin.from("matches").update(upd).eq("id", row.id);
+          if (e5) throw e5;
+        }
+      }
+
+      return json({ ok: true });
+    }
+
     if (action === "rebuild") {
       return json({ error: "Rebuild has been disabled." }, 410);
     }
