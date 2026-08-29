@@ -7,7 +7,7 @@ import { applyFontScale } from "@/lib/prefs";
 export default function Account({ user, players, results, addPlayer, setPlayerHidden, setPlayerColor, playerColors, isAdmin, onOpenAdmin, signOut, back }) {
   const meta = user?.user_metadata || {};
   const [name, setName] = useState(meta.display_name || "");
-  const [theme, setTheme] = useState(["dark", "glass"].includes(meta.theme) ? meta.theme : "light");
+  const [theme, setTheme] = useState(meta.theme === "dark" ? "dark" : "light");
   const [accent, setAccent] = useState(
     meta.accent && (meta.accent.charAt(0) === "#" || ACCENTS[meta.accent]) ? meta.accent : "green"
   );
@@ -176,13 +176,6 @@ export default function Account({ user, players, results, addPlayer, setPlayerHi
             onClick={() => applyTheme("dark")}
           >
             Dark
-          </button>
-          <button
-            className={`btn ${theme === "glass" ? "btn-toggle-on" : ""}`}
-            style={{ flex: 1 }}
-            onClick={() => applyTheme("glass")}
-          >
-            Glass
           </button>
         </div>
 

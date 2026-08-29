@@ -17,18 +17,6 @@ function themePalette() {
   const accent = (root && root.getPropertyValue("--accent").trim()) || "#0e8c5a";
   const theme = (typeof document !== "undefined" && document.documentElement.dataset.theme) || "light";
 
-  if (theme === "glass") {
-    return {
-      theme,
-      accent,
-      bg: "#080c18",
-      ink: "#f5f8fc",
-      inkSoft: "rgba(245,248,252,0.62)",
-      tile: "rgba(255,255,255,0.10)",
-      tileBorder: "rgba(255,255,255,0.22)",
-      frame: "rgba(255,255,255,0.22)",
-    };
-  }
   if (theme === "dark") {
     return {
       theme,
@@ -88,24 +76,6 @@ function fitFont(ctx, text, maxWidth, startSize, weight) {
 }
 
 function paintBackground(ctx, W, H, pal) {
-  if (pal.theme === "glass") {
-    ctx.fillStyle = pal.bg;
-    ctx.fillRect(0, 0, W, H);
-    const blob = (x, y, r, color, alpha) => {
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, color);
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalAlpha = 1;
-    };
-    blob(W * 0.12, H * 0.08, 560, "#7877ff", 0.5);
-    blob(W * 0.9, H * 0.12, 600, "#14c896", 0.42);
-    blob(W * 0.74, H * 0.95, 660, "#f45eaf", 0.38);
-    blob(W * 0.08, H * 0.9, 600, "#46beff", 0.4);
-    return;
-  }
   ctx.fillStyle = pal.bg;
   ctx.fillRect(0, 0, W, H);
   const glow = ctx.createRadialGradient(W * 0.82, 110, 60, W * 0.82, 110, 720);

@@ -24,7 +24,7 @@ import PlayTicTacToe from "@/components/PlayTicTacToe";
 import Leaderboard from "@/components/Leaderboard";
 import Profile from "@/components/Profile";
 import Matchup from "@/components/Matchup";
-import Insights from "@/components/Insights";
+
 import Records from "@/components/Records";
 import Account from "@/components/Account";
 import Admin from "@/components/Admin";
@@ -181,7 +181,7 @@ export default function Page() {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const meta = (session && session.user && session.user.user_metadata) || {};
-    document.documentElement.dataset.theme = ["dark", "glass"].includes(meta.theme) ? meta.theme : "light";
+    document.documentElement.dataset.theme = meta.theme === "dark" ? "dark" : "light";
     const a = meta.accent;
     const accent = a ? (a.charAt(0) === "#" ? a : ACCENTS[a] || ACCENTS.green) : ACCENTS.green;
     // an active skin owns the whole palette — don't pin the accent inline
@@ -385,11 +385,6 @@ export default function Page() {
 
   return (
     <main className="app shell">
-      {view === "insights" ? (
-        <div className="insights-shell">
-          <Insights usernames={visibleUsernames} stats={stats} elo={elo} results={results} gameCount={gameCount} back={() => setView("home")} />
-        </div>
-      ) : (
       <div className="scroll">
         <div className="container">
         <header className="header">
@@ -543,13 +538,11 @@ export default function Page() {
 
         </div>
       </div>
-      )}
       <nav className="nav">
         <button className={`navbtn ${view === "home" ? "active" : ""}`} onClick={() => setView("home")}>Home</button>
         <button className={`navbtn ${view === "setup" || ALL_PLAY_VIEWS.includes(view) ? "active" : ""}`} onClick={goPlay}>Play{live ? " ●" : ""}</button>
         <button className={`navbtn ${["leaderboard", "profile", "records"].includes(view) ? "active" : ""}`} onClick={() => setView("leaderboard")}>Stats</button>
         <button className={`navbtn ${view === "matchup" ? "active" : ""}`} onClick={() => setView("matchup")}>Matchup</button>
-        <button className={`navbtn ${view === "insights" ? "active" : ""}`} onClick={() => setView("insights")}>AI</button>
       </nav>
     </main>
   );
