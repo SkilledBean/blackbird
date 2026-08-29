@@ -159,12 +159,22 @@ select {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+.insights-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
   max-width: 780px;
   margin: 0 auto;
-  padding: 22px 18px 28px;
+  padding: 22px 18px calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ---------- header ---------- */
@@ -503,7 +513,8 @@ select {
   gap: 4px;
   width: calc(100% - 24px);
   max-width: 744px;
-  margin: 8px auto calc(8px + env(safe-area-inset-bottom));
+  margin: 8px auto;
+  margin-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   background: var(--surface);
   border: 1px solid transparent;
   border-radius: 999px;
@@ -671,7 +682,7 @@ label.check input {
 @media (min-width: 900px) {
   .container {
     max-width: 960px;
-    padding: 28px 24px 32px;
+    padding: 28px 24px 44px;
   }
   .nav {
     max-width: 920px;

@@ -152,7 +152,7 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
 
       <div className="card mb-12">
         <div className="tag mb-12">Game Type</div>
-        <div className="row" style={{ flexWrap: "wrap" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
           {[
             ["x01", "X01"],
             ["cricket", "Cricket"],
@@ -167,7 +167,7 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
             <button
               key={k}
               className={`btn ${gameType === k ? "btn-primary" : ""}`}
-              style={{ flex: "1 1 30%" }}
+              style={{ padding: "10px 6px", fontSize: "calc(13px * var(--fs))", lineHeight: 1.2, width: "100%" }}
               onClick={() => setGameType(k)}
             >
               {l}

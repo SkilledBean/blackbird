@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { headToHead } from "@/lib/stats";
 import { BASE_ELO } from "@/lib/constants";
@@ -71,12 +71,19 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
   const [pendingAction, setPendingAction] = useState(null);
   const [selA, setSelA] = useState(known[0] || "");
   const [selB, setSelB] = useState(known[1] || known[0] || "");
-  const endRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const messagesAreaRef = useRef(null);
   const inputRef = useRef(null);
 
+  const scrollToBottom = useCallback(() => {
+    if (messagesAreaRef.current) {
+      messagesAreaRef.current.scrollTo({ top: messagesAreaRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, []);
+
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, busy]);
+    scrollToBottom();
+  }, [messages, busy, scrollToBottom]);
 
   const leagueSummary = () => ({
     totalGames: gameCount,
@@ -181,29 +188,12 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
   };
 
-  const backBtn = (
-    <button
-      className="btn"
-      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, padding: 0, flex: "none" }}
-      onClick={back}
-      aria-label="Back"
-    >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-    </button>
-  );
-
   if (known.length === 0) {
     return (
-      <div className="fade">
-        <div className="between mb-12">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {backBtn}
-            <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
-          </div>
+      <div className="fade" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 18px" }}>
+        <div style={{ maxWidth: 780, margin: "0 auto", width: "100%", textAlign: "center" }}>
+          <p className="subtle">Log a few games first — the AI needs data to analyse.</p>
         </div>
-        <p className="subtle">Log a few games first — the AI needs data to analyse.</p>
       </div>
     );
   }
@@ -211,198 +201,214 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
   const empty = messages.length === 0 && !busy;
 
   return (
-    <div className="fade" style={{ display: "flex", flexDirection: "column", minHeight: "calc(100dvh - 120px)" }}>
-      <div className="between mb-12">
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {backBtn}
+    <div className="fade" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+      {/* Header */}
+      <div style={{ flexShrink: 0, maxWidth: 780, width: "100%", margin: "0 auto", padding: "12px 18px 8px" }}>
+        <div className="between">
           <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
+          {messages.length > 0 && (
+            <button
+              className="btn"
+              style={{ padding: "7px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+              onClick={() => {
+                setMessages([]);
+                setPendingAction(null);
+              }}
+              title="New Chat"
+              aria-label="New Chat"
+            >
+              <NewChatIcon />
+            </button>
+          )}
         </div>
-        {messages.length > 0 && (
-          <button
-            className="btn"
-            style={{ padding: "7px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-            onClick={() => {
-              setMessages([]);
-              setPendingAction(null);
-            }}
-            title="New Chat"
-            aria-label="New Chat"
-          >
-            <NewChatIcon />
-          </button>
-        )}
       </div>
 
-      <div style={{ flex: 1 }}>
-        {empty && (
-          <div style={{ textAlign: "center", padding: "24px 16px 32px" }}>
-            <div style={{ fontWeight: 700, fontSize: "calc(20px * var(--fs))", marginBottom: 6 }}>
-              Darts Analyst
-            </div>
-            <p className="subtle" style={{ margin: "0 0 24px", lineHeight: 1.5 }}>
-              Ask anything about your league. Powered by real stats and game history.
-            </p>
+      {/* Messages area — own scroll */}
+      <div
+        ref={messagesAreaRef}
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+        }}
+      >
+        <style>{`.insights-msgs::-webkit-scrollbar{display:none}`}</style>
+        <div className="insights-msgs" style={{ maxWidth: 780, margin: "0 auto", padding: "12px 18px 16px" }}>
+          {empty && (
+            <div style={{ textAlign: "center", padding: "24px 8px 32px" }}>
+              <div style={{ fontWeight: 700, fontSize: "calc(20px * var(--fs))", marginBottom: 6 }}>
+                Darts Analyst
+              </div>
+              <p className="subtle" style={{ margin: "0 0 24px", lineHeight: 1.5 }}>
+                Ask anything about your league. Powered by real stats and game history.
+              </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 320, margin: "0 auto" }}>
-              <button
-                className="btn"
-                style={{ width: "100%", padding: "12px 16px" }}
-                onClick={() => send("Give me a league overview", "league", leagueSummary())}
-              >
-                League Overview
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 320, margin: "0 auto" }}>
+                <button
+                  className="btn"
+                  style={{ width: "100%", padding: "12px 16px" }}
+                  onClick={() => send("Give me a league overview", "league", leagueSummary())}
+                >
+                  League Overview
+                </button>
 
-              <button
-                className="btn"
-                style={{ width: "100%", padding: "12px 16px" }}
-                onClick={() => setPendingAction(pendingAction === "player" ? null : "player")}
-              >
-                Player Profile
-              </button>
-              {pendingAction === "player" && (
-                <div style={{ display: "flex", gap: 8 }}>
-                  <select className="select" style={{ flex: 1 }} value={selA} onChange={(e) => setSelA(e.target.value)}>
-                    {known.map((u) => (
-                      <option key={u} value={u}>{u}</option>
-                    ))}
-                  </select>
-                  <button
-                    className="btn btn-primary"
-                    style={{ padding: "8px 16px" }}
-                    onClick={() => send(`Tell me about ${selA}`, "player", playerSummary(selA))}
-                  >
-                    Go
-                  </button>
-                </div>
-              )}
-
-              <button
-                className="btn"
-                style={{ width: "100%", padding: "12px 16px" }}
-                onClick={() => setPendingAction(pendingAction === "matchup" ? null : "matchup")}
-              >
-                Head-to-Head
-              </button>
-              {pendingAction === "matchup" && (
-                <div style={{ display: "flex", gap: 8 }}>
-                  <select className="select" style={{ flex: 1 }} value={selA} onChange={(e) => setSelA(e.target.value)}>
-                    {known.map((u) => (
-                      <option key={u} value={u}>{u}</option>
-                    ))}
-                  </select>
-                  <select className="select" style={{ flex: 1 }} value={selB} onChange={(e) => setSelB(e.target.value)}>
-                    {known.map((u) => (
-                      <option key={u} value={u}>{u}</option>
-                    ))}
-                  </select>
-                  <button
-                    className="btn btn-primary"
-                    style={{ padding: "8px 16px" }}
-                    onClick={() => send(`${selA} vs ${selB}`, "matchup", matchupSummary(selA, selB))}
-                    disabled={selA === selB}
-                  >
-                    Go
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: msg.role === "user" ? "flex-end" : "flex-start",
-              marginBottom: 16,
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "85%",
-                padding: "10px 14px",
-                borderRadius:
-                  msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                background:
-                  msg.role === "user"
-                    ? "var(--accent)"
-                    : msg.error
-                      ? "var(--red-soft)"
-                      : "var(--surface)",
-                color: msg.role === "user" ? "#fff" : msg.error ? "var(--red)" : "var(--ink)",
-                border: msg.role === "user" ? "none" : "1px solid var(--line)",
-                lineHeight: 1.6,
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-                fontSize: "calc(15px * var(--fs))",
-              }}
-            >
-              {msg.content}
-            </div>
-            {msg.role === "assistant" && !msg.error && (
-              <button
-                onClick={() => copyMsg(msg.content, msg.id)}
-                style={{
-                  marginTop: 4,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: copied === msg.id ? "var(--accent)" : "var(--muted)",
-                  padding: "3px 8px",
-                  borderRadius: 8,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  fontSize: "calc(12px * var(--fs))",
-                  fontFamily: "inherit",
-                  transition: "color 0.15s",
-                }}
-              >
-                {copied === msg.id ? (
-                  <>
-                    <CheckIcon /> Copied
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon /> Copy
-                  </>
+                <button
+                  className="btn"
+                  style={{ width: "100%", padding: "12px 16px" }}
+                  onClick={() => setPendingAction(pendingAction === "player" ? null : "player")}
+                >
+                  Player Profile
+                </button>
+                {pendingAction === "player" && (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <select className="select" style={{ flex: 1 }} value={selA} onChange={(e) => setSelA(e.target.value)}>
+                      {known.map((u) => (
+                        <option key={u} value={u}>{u}</option>
+                      ))}
+                    </select>
+                    <button
+                      className="btn btn-primary"
+                      style={{ padding: "8px 16px" }}
+                      onClick={() => send(`Tell me about ${selA}`, "player", playerSummary(selA))}
+                    >
+                      Go
+                    </button>
+                  </div>
                 )}
-              </button>
-            )}
-          </div>
-        ))}
 
-        {busy && (
-          <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 16 }}>
-            <div
-              style={{
-                padding: "14px 20px",
-                borderRadius: "18px 18px 18px 4px",
-                background: "var(--surface)",
-                border: "1px solid var(--line)",
-              }}
-            >
-              <div className="typing-dots">
-                <span />
-                <span />
-                <span />
+                <button
+                  className="btn"
+                  style={{ width: "100%", padding: "12px 16px" }}
+                  onClick={() => setPendingAction(pendingAction === "matchup" ? null : "matchup")}
+                >
+                  Head-to-Head
+                </button>
+                {pendingAction === "matchup" && (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <select className="select" style={{ flex: 1 }} value={selA} onChange={(e) => setSelA(e.target.value)}>
+                      {known.map((u) => (
+                        <option key={u} value={u}>{u}</option>
+                      ))}
+                    </select>
+                    <select className="select" style={{ flex: 1 }} value={selB} onChange={(e) => setSelB(e.target.value)}>
+                      {known.map((u) => (
+                        <option key={u} value={u}>{u}</option>
+                      ))}
+                    </select>
+                    <button
+                      className="btn btn-primary"
+                      style={{ padding: "8px 16px" }}
+                      onClick={() => send(`${selA} vs ${selB}`, "matchup", matchupSummary(selA, selB))}
+                      disabled={selA === selB}
+                    >
+                      Go
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div ref={endRef} />
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+                marginBottom: 16,
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: "85%",
+                  padding: "10px 14px",
+                  borderRadius:
+                    msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                  background:
+                    msg.role === "user"
+                      ? "var(--accent)"
+                      : msg.error
+                        ? "var(--red-soft)"
+                        : "var(--surface)",
+                  color: msg.role === "user" ? "#fff" : msg.error ? "var(--red)" : "var(--ink)",
+                  border: msg.role === "user" ? "none" : "1px solid var(--line)",
+                  lineHeight: 1.6,
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  fontSize: "calc(15px * var(--fs))",
+                }}
+              >
+                {msg.content}
+              </div>
+              {msg.role === "assistant" && !msg.error && (
+                <button
+                  onClick={() => copyMsg(msg.content, msg.id)}
+                  style={{
+                    marginTop: 4,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: copied === msg.id ? "var(--accent)" : "var(--muted)",
+                    padding: "3px 8px",
+                    borderRadius: 8,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontSize: "calc(12px * var(--fs))",
+                    fontFamily: "inherit",
+                    transition: "color 0.15s",
+                  }}
+                >
+                  {copied === msg.id ? (
+                    <>
+                      <CheckIcon /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <CopyIcon /> Copy
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          ))}
+
+          {busy && (
+            <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 16 }}>
+              <div
+                style={{
+                  padding: "14px 20px",
+                  borderRadius: "18px 18px 18px 4px",
+                  background: "var(--surface)",
+                  border: "1px solid var(--line)",
+                }}
+              >
+                <div className="typing-dots">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
+      {/* Input bar — pinned at bottom */}
       <div
         style={{
-          position: "sticky",
-          bottom: 0,
+          flexShrink: 0,
+          maxWidth: 780,
+          width: "100%",
+          margin: "0 auto",
+          padding: "8px 18px calc(8px + env(safe-area-inset-bottom, 0px))",
           background: "var(--bg)",
-          paddingTop: 8,
-          paddingBottom: 4,
+          borderTop: "1px solid var(--line)",
         }}
       >
         <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
