@@ -4,7 +4,7 @@ Blackbird is a mobile-first web app for scoring darts with your league or
 friends. It scores **X01 (501 / 301 / 701)**, **Cricket** (Standard, Cutthroat,
 and No-score), and **Baseball**, keeps every player's stats in a shared
 Postgres database, and layers on leaderboards, player profiles with trend
-charts, an **Elo matchup predictor**, and an **AI insights** tab that answers
+charts, an **Elo matchup predictor**, and an **AI chat** tab that answers
 free-form questions about your league.
 
 Everyone signs in with email/password, scores games on their phone, and the
@@ -35,6 +35,11 @@ localStorage — Postgres is the single source of truth.
 
 ## What it is (at a glance)
 
+- **Player avatars and colors**: every player gets a colored circle badge
+  with their initial letter, shown next to their name throughout the app.
+  Colors are deterministic by default (a hash of the username) and can be
+  customized in Account settings. The header shows the signed-in user's
+  badge instead of a generic icon.
 - **TV scoreboard (cast mode)**: tap Cast to TV during any game, put the
   app's `/tv` page on a TV (AirPlay a Safari window, a smart TV browser, or
   a Chromecast tab-cast), enter the 4-character code, and the TV shows a
@@ -52,18 +57,29 @@ localStorage — Postgres is the single source of truth.
 - **Cricket MPR**: live **marks-per-round** for every player while the game is
   being played, per-round mark history saved with each game, career MPR and
   best-game MPR on profiles, and an MPR-over-time chart.
-- **Home dashboard**: player/game/top-average tiles plus a bar chart of
-  games played per week over the last 3 months.
+- **Home dashboard**: player/game/top-average tiles, a bar chart of games
+  played per week over the last 3 months, a **podium/list leaderboard**
+  with a toggle between views (podium shows the top 3 on a visual podium),
+  and a **Highlights** section showing records from the last 3 months (most
+  active player, most wins, best 3-dart average, highest turn, best
+  checkout, best cricket MPR).
 - **Stats**: win %, 3-dart average (overall and per dart position), highest
   turn, best leg, highest checkout, MPR, average runs, and more.
 - **Elo**: every multi-player game updates a shared Elo rating; the Matchup tab
   predicts win probability between any two players.
-- **AI insights**: a serverless route sends league stats to the AI provider of
-  your choice (Gemini, Groq, OpenAI, or Anthropic) and answers questions like
-  "who has improved the most lately?".
+- **AI chat**: a conversational chat interface (like ChatGPT) backed by a
+  serverless route that sends league stats to the AI provider of your choice
+  (OpenAI, Gemini, Groq, or Anthropic). Supports free-form questions,
+  league overviews, player profiles, and head-to-head analysis. Messages
+  have a copy button and dates are returned in readable format.
+- **Player card export**: a canvas-rendered PNG stat card with player avatar,
+  Elo, record, and key stats — auto-downloads on desktop and opens the
+  share sheet on mobile.
 - **Admin panel**: the configured admin account can manage login accounts,
   hide/delete players, reset scores, and try experimental full-app skins
   (theme lab — applies only to the admin's own account).
+- **Smooth animations**: buttons, cards, and navigation have spring-like
+  transitions with press feedback across the entire UI.
 
 ## System architecture
 
@@ -85,7 +101,7 @@ theming, security — end to end.)*
 │    gate, views, live games   │
 │                              │
 │  app/api/insights/route.js   │  server-only: holds the AI key,
-│    → Gemini/Groq/OpenAI/     │  verifies the caller's Supabase
+│    → OpenAI/Gemini/Groq/     │  verifies the caller's Supabase
 │      Anthropic               │  session before spending quota
 │                              │
 │  app/api/admin/route.js      │  server-only: holds the Supabase
@@ -148,7 +164,7 @@ Key design points:
    (winner vs each loser), and a `game_results` row is inserted per player.
 7. **Browse stats** — Leaderboard (sortable by Elo/X01/Cricket MPR), Profiles
    (trend charts + per-game history), Matchup (Elo win probability +
-   head-to-head), Insights (AI questions), and your Player Card.
+   head-to-head), AI Chat (free-form questions), and your Player Card.
 
 ### Cricket MPR details
 
@@ -174,8 +190,8 @@ Key design points:
 Run `supabase/schema.sql` once in the Supabase SQL editor. Three tables:
 
 - **`players`** — one row per dart player (a name, not a login):
-  `username` (unique), `hidden` (kept out of standings), `elo` (current
-  rating), `created_at`.
+  `username` (unique), `hidden` (kept out of standings), `color` (optional
+  hex color for their avatar badge), `elo` (current rating), `created_at`.
 - **`game_results`** — one row **per player per finished game**: `game_id`
   (shared by all rows of one game), `username`, `game_type`
   (`x01` | `cricket` | `baseball`), `config`, `winner`, `result`
@@ -207,7 +223,7 @@ through the admin route with the service-role key.
 |----------|-------|---------|
 | `NEXT_PUBLIC_SUPABASE_URL` | client | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | client | Supabase anon key (public by design; RLS protects data) |
-| `AI_PROVIDER` | server | `gemini` (default), `groq`, `openai`, or `anthropic` |
+| `AI_PROVIDER` | server | `openai` (default), `gemini`, `groq`, or `anthropic` |
 | `GEMINI_API_KEY` / `GROQ_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | server | key for the chosen provider |
 | `AI_MODEL` | server | optional model override |
 | `SUPABASE_SERVICE_ROLE_KEY` | server | required only for the Admin panel |
@@ -224,19 +240,20 @@ Push this repo to GitHub. Every later `git push` to `main` redeploys Vercel.
 ## 2. Supabase (database + login)
 1. https://supabase.com → **New project** (set + save a DB password).
 2. **SQL Editor → New query** → paste all of `supabase/schema.sql` → **Run**.
-3. **Settings → API** → copy **Project URL** and the **anon public** key.
-4. **Authentication → Providers → Email**: enabled. Turn **OFF** "Confirm
+3. Run `supabase/migration-add-color.sql` to add the player color column.
+4. **Settings → API** → copy **Project URL** and the **anon public** key.
+5. **Authentication → Providers → Email**: enabled. Turn **OFF** "Confirm
    email" so accounts work instantly on phones.
-5. After everyone has signed up, turn **OFF** "Allow new users to sign up" to
+6. After everyone has signed up, turn **OFF** "Allow new users to sign up" to
    lock it to your group.
 
 ## 3. Pick an AI provider for the Insights tab
 
 | Provider | Cost | Get a key | Default model |
 |----------|------|-----------|---------------|
+| **OpenAI** | Paid | https://platform.openai.com/api-keys | `gpt-4o-mini` |
 | **Gemini** | Free | https://aistudio.google.com/apikey | `gemini-2.5-flash` |
 | **Groq** | Free | https://console.groq.com/keys | `llama-3.3-70b-versatile` |
-| **OpenAI** | Paid | https://platform.openai.com/api-keys | `gpt-4o-mini` |
 | **Anthropic** | Paid | https://console.anthropic.com | `claude-3-5-haiku-latest` |
 
 Model names drift; if a default ever errors, set `AI_MODEL` to a current one.
@@ -296,29 +313,29 @@ app/
   tv/page.js              TV scoreboard: code entry + live big-screen views
 components/
   Auth.js                 sign in / sign up
-  Home.js                 landing view + top players
+  Home.js                 landing view: podium/list leaderboard + highlights
   Setup.js                game type, options, player picker
   PlayX01.js              X01 scorer (per-dart entry, checkout tracking)
   PlayCricket.js          cricket scorer (marks grid, live MPR, per-round log)
   PlayBaseball.js         baseball scorer (9 innings + extras)
   Leaderboard.js          sortable standings (Elo / X01 / Cricket MPR)
   Profile.js              player page: trend charts + game history
-  PlayerCard.js           shareable stat card
+  PlayerCard.js           shareable stat card (canvas export with avatar)
   Matchup.js              Elo win-probability predictor + head-to-head
-  Insights.js             AI Q&A over league stats
-  Account.js              profile settings, theme, font scale
+  Insights.js             AI chat interface over league stats
+  Account.js              profile settings, player color, theme, font scale
   Admin.js                admin panel (accounts, players, resets)
   tv/TVScoreboard.js      big-screen cricket/X01/baseball scoreboards
   Charts.js               dependency-free SVG line + bar charts
   DartBoard.js            SVG dartboard with highlights/hits
-  ui.js                   small shared UI pieces
+  ui.js                   shared UI: Logo, PlayerBadge, BackBar, Stat, Modal
 lib/
   supabase.js             Supabase client
   cast.js                 TV-cast transport (Realtime broadcast + local)
   darts.js                shared dart/mark formatting helpers
   db.js                   data access (players, game_results)
   stats.js                Elo math, career stats, timelines, head-to-head
-  constants.js            targets, cricket values, Elo constants, accents
+  constants.js            targets, cricket values, Elo constants, player colors
   prefs.js                font-scale preference
   prodigy/parser.js       Prodigy D9000W board protocol parser
 packages/

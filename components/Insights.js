@@ -181,11 +181,27 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
   };
 
+  const backBtn = (
+    <button
+      className="btn"
+      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, padding: 0, flex: "none" }}
+      onClick={back}
+      aria-label="Back"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+  );
+
   if (known.length === 0) {
     return (
       <div className="fade">
         <div className="between mb-12">
-          <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {backBtn}
+            <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
+          </div>
         </div>
         <p className="subtle">Log a few games first — the AI needs data to analyse.</p>
       </div>
@@ -197,7 +213,10 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
   return (
     <div className="fade" style={{ display: "flex", flexDirection: "column", minHeight: "calc(100dvh - 120px)" }}>
       <div className="between mb-12">
-        <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {backBtn}
+          <div className="display" style={{ fontSize: "calc(17px * var(--fs))" }}>AI Chat</div>
+        </div>
         {messages.length > 0 && (
           <button
             className="btn"
