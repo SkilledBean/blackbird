@@ -109,7 +109,7 @@ select {
 .container {
   max-width: 780px;
   margin: 0 auto;
-  padding: 22px 18px calc(40px + env(safe-area-inset-bottom, 0px));
+  padding: 22px 14px calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ---------- header ---------- */
@@ -118,7 +118,7 @@ select {
   /* buttons drop to their own line rather than off-screen at large text */
   flex-wrap: wrap;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
   margin-bottom: 22px;
 }
 .brand-title {
