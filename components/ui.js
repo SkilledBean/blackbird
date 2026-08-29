@@ -90,6 +90,29 @@ export function CastIcon({ size = "1.1em" }) {
   );
 }
 
+export function ShuffleIcon({ size = "1em" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      style={{ display: "block", flex: "none" }}
+    >
+      <path d="M16 3h5v5" />
+      <path d="M4 20L21 3" />
+      <path d="M21 16v5h-5" />
+      <path d="M15 15l6 6" />
+      <path d="M4 4l5 5" />
+    </svg>
+  );
+}
+
 export function PersonIcon({ size = "1.2em" }) {
   return (
     <svg
