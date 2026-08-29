@@ -387,15 +387,6 @@ export default function Page() {
     <main className="app shell">
       {view === "insights" ? (
         <div className="insights-shell">
-          <div style={{ maxWidth: 780, width: "100%", margin: "0 auto", padding: "16px 18px 0" }}>
-            <header className="header" style={{ marginBottom: 0 }}>
-              <Logo size={36} />
-              <div style={{ flex: 1 }}>
-                <div className="brand-title">Blackbird</div>
-                <div className="tag" style={{ marginTop: 2 }}>dart scoring system</div>
-              </div>
-            </header>
-          </div>
           <Insights usernames={visibleUsernames} stats={stats} elo={elo} results={results} gameCount={gameCount} back={() => setView("home")} />
         </div>
       ) : (

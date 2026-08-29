@@ -403,15 +403,13 @@ export default function Insights({ usernames, stats, elo, results, gameCount, ba
       <div
         style={{
           flexShrink: 0,
-          maxWidth: 780,
-          width: "100%",
-          margin: "0 auto",
-          padding: "8px 18px calc(8px + env(safe-area-inset-bottom, 0px))",
-          background: "var(--bg)",
+          background: "var(--surface)",
           borderTop: "1px solid var(--line)",
+          WebkitBackdropFilter: "blur(20px) saturate(150%)",
+          backdropFilter: "blur(20px) saturate(150%)",
         }}
       >
-        <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+        <div style={{ maxWidth: 780, width: "100%", margin: "0 auto", padding: "8px 18px calc(8px + env(safe-area-inset-bottom, 0px))", display: "flex", gap: 8, alignItems: "flex-end" }}>
           <textarea
             ref={inputRef}
             value={input}
