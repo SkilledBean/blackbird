@@ -224,6 +224,7 @@ export default function Page() {
     return () => document.removeEventListener("visibilitychange", onFocus);
   }, [session, refresh]);
 
+  const backfillRan = useRef(false);
   useEffect(() => {
     if (!session || !dataReady) return;
     const meName = (session.user?.user_metadata?.display_name || "").trim();
@@ -234,12 +235,27 @@ export default function Page() {
       if (!existing.authId) {
         (async () => { await dbLinkPlayerAuth(existing.username, meId); await refresh(); })();
       }
+    } else {
+      (async () => {
+        await dbAddPlayer(meName, false, meId);
+        await refresh();
+      })();
       return;
     }
-    (async () => {
-      await dbAddPlayer(meName, false, meId);
-      await refresh();
-    })();
+    if (!backfillRan.current && players.some((p) => !p.authId)) {
+      backfillRan.current = true;
+      (async () => {
+        try {
+          const token = session.access_token;
+          const res = await fetch("/api/link-players", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          });
+          const data = await res.json();
+          if (data.linked > 0) await refresh();
+        } catch {}
+      })();
+    }
   }, [session, dataReady, players, refresh]);
 
   const usernames = useMemo(() => players.map((p) => p.username), [players]);
