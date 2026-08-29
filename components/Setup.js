@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BackBar, PlayerBadge } from "./ui";
+import { BackBar, PlayerBadge, ShuffleIcon } from "./ui";
 import { CRICKET_VARIANTS } from "@/lib/constants";
 
 const KILLER_NUMBERS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
@@ -28,14 +28,22 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
 
   const add = (u) => setSelected((s) => (s.length < 4 && !s.includes(u) ? [...s, u] : s));
   const remove = (u) => setSelected((s) => s.filter((x) => x !== u));
+  const shuffle = () => setSelected((s) => {
+    const a = [...s];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  });
+  const moveFirst = (u) => setSelected((s) => [u, ...s.filter((x) => x !== u)]);
 
   const anyLinked = players.some((p) => p.authId);
   const eligible = anyLinked
     ? players.filter((p) => p.authId).map((p) => p.username)
     : players.map((p) => p.username);
 
-  const rosterOptions = eligible
-    .filter((u) => u.toLowerCase() !== meName.toLowerCase() && !selected.includes(u));
+  const rosterOptions = eligible.filter((u) => !selected.includes(u));
 
   const solo = selected.length === 1;
   const needsTwo = gameType === "tictactoe" || gameType === "killer" || gameType === "gotcha";
@@ -252,19 +260,40 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
       </div>
 
       <div className="card mb-12">
-        <div className="tag mb-12">
-          Players ({exactTwo ? "exactly 2" : needsTwo ? "2-4" : "1 = solo practice, up to 4"})
+        <div className="tag mb-12" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>Players ({exactTwo ? "exactly 2" : needsTwo ? "2-4" : "1 = solo practice, up to 4"})</span>
+          {selected.length >= 2 && (
+            <button className="btn" onClick={shuffle} style={{ padding: "4px 10px", fontSize: "calc(11px * var(--fs))", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              <ShuffleIcon /> Shuffle
+            </button>
+          )}
         </div>
 
         <div className="flex-wrap">
           {selected.length === 0 && <span className="subtle">No players selected yet.</span>}
-          {selected.map((u) => (
-            <button key={u} className="btn btn-primary" onClick={() => remove(u)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          {selected.map((u, i) => (
+            <button key={u} className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }} onClick={() => remove(u)}>
+              <span style={{ opacity: 0.6, fontSize: "calc(11px * var(--fs))", minWidth: 14 }}>{i + 1}.</span>
               <PlayerBadge username={u} color={playerColors?.[u]} size={18} showName={false} />
               {u}{u === meName ? " (you)" : ""} ✕
             </button>
           ))}
         </div>
+
+        {selected.length >= 2 && (
+          <p className="tag" style={{ marginTop: 8, textTransform: "none", letterSpacing: 0 }}>
+            Tap a name below to move them to first throw:
+          </p>
+        )}
+        {selected.length >= 2 && (
+          <div className="flex-wrap" style={{ marginTop: 4 }}>
+            {selected.map((u, i) => i > 0 ? (
+              <button key={u} className="btn" onClick={() => moveFirst(u)} style={{ fontSize: "calc(12px * var(--fs))", padding: "4px 10px" }}>
+                {u} &rarr; 1st
+              </button>
+            ) : null)}
+          </div>
+        )}
 
         {rosterOptions.length > 0 && selected.length < (exactTwo ? 2 : 4) && (
           <select

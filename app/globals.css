@@ -235,27 +235,23 @@ select {
 }
 .podium-col {
   cursor: pointer;
-  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .podium-col .podium-bar {
-  transition: box-shadow 0.25s ease;
-}
-.podium-col:hover {
-  transform: translateY(-6px);
+  transition: padding-top 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.25s ease;
 }
 .podium-col:hover .podium-bar {
+  padding-top: 10px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
-.podium-col:active {
-  transform: translateY(-3px);
+.podium-col:active .podium-bar {
+  padding-top: 5px;
   transition-duration: 0.08s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .podium-col:hover,
-  .podium-col:active {
-    transform: none;
-  }
-  .podium-col:hover .podium-bar {
+  .podium-col:hover .podium-bar,
+  .podium-col:active .podium-bar {
+    padding-top: 0;
     box-shadow: none;
   }
 }
