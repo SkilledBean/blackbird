@@ -62,11 +62,40 @@ export async function POST(req) {
         displayName: u.user_metadata?.display_name || "",
         createdAt: u.created_at,
       }));
-      const { data: players, error: pe } = await admin
+      let players;
+      let hasAuthIdCol = true;
+      const res1 = await admin
         .from("players")
         .select("username, hidden, created_at, auth_id")
         .order("created_at", { ascending: true });
-      if (pe) throw pe;
+      if (res1.error) {
+        hasAuthIdCol = false;
+        const res2 = await admin
+          .from("players")
+          .select("username, hidden, created_at")
+          .order("created_at", { ascending: true });
+        if (res2.error) throw res2.error;
+        players = res2.data;
+      } else {
+        players = res1.data;
+      }
+
+      if (hasAuthIdCol) {
+        const usersByName = {};
+        for (const u of users) {
+          if (u.displayName) usersByName[u.displayName.toLowerCase()] = u.id;
+        }
+        for (const p of players) {
+          if (!p.auth_id) {
+            const matchId = usersByName[(p.username || "").toLowerCase()];
+            if (matchId && !players.some((pp) => pp.auth_id === matchId)) {
+              await admin.from("players").update({ auth_id: matchId }).eq("username", p.username);
+              p.auth_id = matchId;
+            }
+          }
+        }
+      }
+
       return json({
         users,
         players: (players || []).map((p) => ({

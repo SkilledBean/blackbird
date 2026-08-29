@@ -29,9 +29,10 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
   const add = (u) => setSelected((s) => (s.length < 4 && !s.includes(u) ? [...s, u] : s));
   const remove = (u) => setSelected((s) => s.filter((x) => x !== u));
 
-  const eligible = players
-    .filter((p) => p.authId)
-    .map((p) => p.username);
+  const anyLinked = players.some((p) => p.authId);
+  const eligible = anyLinked
+    ? players.filter((p) => p.authId).map((p) => p.username)
+    : players.map((p) => p.username);
 
   const rosterOptions = eligible
     .filter((u) => u.toLowerCase() !== meName.toLowerCase() && !selected.includes(u));
