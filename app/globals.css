@@ -237,21 +237,36 @@ select {
   cursor: pointer;
 }
 .podium-col .podium-bar {
-  transition: padding-top 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              box-shadow 0.25s ease;
+  position: relative;
+  transition: box-shadow 0.25s ease;
+}
+.podium-col .podium-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 0;
+  border-radius: 12px 12px 0 0;
+  background: inherit;
+  transition: height 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .podium-col:hover .podium-bar {
-  padding-top: 10px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
-.podium-col:active .podium-bar {
-  padding-top: 5px;
+.podium-col:hover .podium-bar::before {
+  height: 10px;
+}
+.podium-col:active .podium-bar::before {
+  height: 5px;
   transition-duration: 0.08s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .podium-col:hover .podium-bar,
-  .podium-col:active .podium-bar {
-    padding-top: 0;
+  .podium-col:hover .podium-bar::before,
+  .podium-col:active .podium-bar::before {
+    height: 0;
+  }
+  .podium-col:hover .podium-bar {
     box-shadow: none;
   }
 }

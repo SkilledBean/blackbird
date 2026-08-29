@@ -113,6 +113,27 @@ export function ShuffleIcon({ size = "1em" }) {
   );
 }
 
+export function DragIcon({ size = "1em" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      stroke="none"
+      aria-hidden="true"
+      style={{ display: "block", flex: "none" }}
+    >
+      <circle cx="6" cy="3" r="1.5" />
+      <circle cx="10" cy="3" r="1.5" />
+      <circle cx="6" cy="8" r="1.5" />
+      <circle cx="10" cy="8" r="1.5" />
+      <circle cx="6" cy="13" r="1.5" />
+      <circle cx="10" cy="13" r="1.5" />
+    </svg>
+  );
+}
+
 export function PersonIcon({ size = "1.2em" }) {
   return (
     <svg

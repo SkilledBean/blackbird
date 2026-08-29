@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { BackBar, PlayerBadge, ShuffleIcon } from "./ui";
+import { useState, useRef, useCallback } from "react";
+import { BackBar, PlayerBadge, ShuffleIcon, DragIcon } from "./ui";
 import { CRICKET_VARIANTS } from "@/lib/constants";
 
 const KILLER_NUMBERS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
@@ -12,6 +12,85 @@ function assignKillerNumbers(players) {
     out[p] = pool.splice(idx, 1)[0];
   }
   return out;
+}
+
+function useDragReorder(selected, setSelected) {
+  const dragIdx = useRef(null);
+  const overIdx = useRef(null);
+  const touchStartY = useRef(null);
+  const dragging = useRef(false);
+
+  const reorder = useCallback((from, to) => {
+    if (from === to) return;
+    setSelected((s) => {
+      const a = [...s];
+      const [item] = a.splice(from, 1);
+      a.splice(to, 0, item);
+      return a;
+    });
+  }, [setSelected]);
+
+  const onDragStart = useCallback((e, i) => {
+    dragIdx.current = i;
+    dragging.current = true;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(i));
+  }, []);
+
+  const onDragOver = useCallback((e, i) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (overIdx.current !== i && dragIdx.current !== null) {
+      overIdx.current = i;
+      reorder(dragIdx.current, i);
+      dragIdx.current = i;
+    }
+  }, [reorder]);
+
+  const onDragEnd = useCallback(() => {
+    dragIdx.current = null;
+    overIdx.current = null;
+    dragging.current = false;
+  }, []);
+
+  const pillRefs = useRef([]);
+
+  const onTouchStart = useCallback((e, i) => {
+    dragIdx.current = i;
+    touchStartY.current = e.touches[0].clientY;
+    dragging.current = false;
+  }, []);
+
+  const onTouchMove = useCallback((e, i) => {
+    if (dragIdx.current === null) return;
+    const dy = Math.abs(e.touches[0].clientY - touchStartY.current);
+    const dx = Math.abs(e.touches[0].clientX - (touchStartY.current || 0));
+    if (!dragging.current && (dy > 8 || dx > 8)) dragging.current = true;
+    if (!dragging.current) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const els = pillRefs.current;
+    for (let j = 0; j < els.length; j++) {
+      if (j === dragIdx.current || !els[j]) continue;
+      const rect = els[j].getBoundingClientRect();
+      if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+          touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        reorder(dragIdx.current, j);
+        dragIdx.current = j;
+        break;
+      }
+    }
+  }, [reorder]);
+
+  const onTouchEnd = useCallback((e) => {
+    const wasDrag = dragging.current;
+    dragIdx.current = null;
+    dragging.current = false;
+    touchStartY.current = null;
+    return wasDrag;
+  }, []);
+
+  return { onDragStart, onDragOver, onDragEnd, onTouchStart, onTouchMove, onTouchEnd, pillRefs };
 }
 
 export default function Setup({ players, onStart, back, me, playerColors }) {
@@ -36,7 +115,8 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
     }
     return a;
   });
-  const moveFirst = (u) => setSelected((s) => [u, ...s.filter((x) => x !== u)]);
+
+  const { onDragStart, onDragOver, onDragEnd, onTouchStart, onTouchMove, onTouchEnd, pillRefs } = useDragReorder(selected, setSelected);
 
   const anyLinked = players.some((p) => p.authId);
   const eligible = anyLinked
@@ -269,30 +349,65 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
           )}
         </div>
 
-        <div className="flex-wrap">
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {selected.length === 0 && <span className="subtle">No players selected yet.</span>}
           {selected.map((u, i) => (
-            <button key={u} className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }} onClick={() => remove(u)}>
-              <span style={{ opacity: 0.6, fontSize: "calc(11px * var(--fs))", minWidth: 14 }}>{i + 1}.</span>
-              <PlayerBadge username={u} color={playerColors?.[u]} size={18} showName={false} />
-              {u}{u === meName ? " (you)" : ""} ✕
-            </button>
+            <div
+              key={u}
+              ref={(el) => { pillRefs.current[i] = el; }}
+              draggable={selected.length >= 2}
+              onDragStart={(e) => onDragStart(e, i)}
+              onDragOver={(e) => onDragOver(e, i)}
+              onDragEnd={onDragEnd}
+              onTouchStart={(e) => onTouchStart(e, i)}
+              onTouchMove={(e) => onTouchMove(e, i)}
+              onTouchEnd={(e) => {
+                const wasDrag = onTouchEnd(e);
+                if (wasDrag) e.preventDefault();
+              }}
+              className="btn btn-primary"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 14px",
+                cursor: selected.length >= 2 ? "grab" : "default",
+                userSelect: "none",
+                touchAction: selected.length >= 2 ? "none" : "auto",
+              }}
+            >
+              {selected.length >= 2 && (
+                <span style={{ opacity: 0.5, flex: "none", display: "flex" }}>
+                  <DragIcon />
+                </span>
+              )}
+              <span style={{ opacity: 0.6, fontSize: "calc(11px * var(--fs))", minWidth: 16, flex: "none" }}>{i + 1}.</span>
+              <PlayerBadge username={u} color={playerColors?.[u]} size={20} showName={false} />
+              <span style={{ flex: 1 }}>{u}{u === meName ? " (you)" : ""}</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); remove(u); }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "inherit",
+                  cursor: "pointer",
+                  padding: "2px 4px",
+                  opacity: 0.7,
+                  fontSize: "calc(14px * var(--fs))",
+                  flex: "none",
+                }}
+                aria-label={`Remove ${u}`}
+              >
+                ✕
+              </button>
+            </div>
           ))}
         </div>
 
         {selected.length >= 2 && (
           <p className="tag" style={{ marginTop: 8, textTransform: "none", letterSpacing: 0 }}>
-            Tap a name below to move them to first throw:
+            Drag to reorder. Player 1 throws first.
           </p>
-        )}
-        {selected.length >= 2 && (
-          <div className="flex-wrap" style={{ marginTop: 4 }}>
-            {selected.map((u, i) => i > 0 ? (
-              <button key={u} className="btn" onClick={() => moveFirst(u)} style={{ fontSize: "calc(12px * var(--fs))", padding: "4px 10px" }}>
-                {u} &rarr; 1st
-              </button>
-            ) : null)}
-          </div>
         )}
 
         {rosterOptions.length > 0 && selected.length < (exactTwo ? 2 : 4) && (
