@@ -199,7 +199,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
               return (
                 <div
                   key={r.u}
-                  className="clickable"
+                  className="podium-col"
                   onClick={() => openProfile(r.u)}
                   style={{
                     flex: 1,
@@ -226,7 +226,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
                   <div style={{ color: "var(--accent)", fontWeight: 800, fontSize: "calc(16px * var(--fs))", marginTop: 2 }}>
                     {Math.round(r.elo)}
                   </div>
-                  <div style={{
+                  <div className="podium-bar" style={{
                     width: "100%",
                     height: h,
                     marginTop: 8,
@@ -240,7 +240,6 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
                     alignItems: "flex-end",
                     justifyContent: "center",
                     paddingBottom: 10,
-                    transition: "height 0.3s ease",
                   }}>
                     <span style={{
                       fontWeight: 800,
