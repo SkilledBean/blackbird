@@ -14,9 +14,8 @@ function assignKillerNumbers(players) {
   return out;
 }
 
-export default function Setup({ players, addPlayer, onStart, back, me, playerColors }) {
+export default function Setup({ players, onStart, back, me, playerColors }) {
   const meName = (me || "").trim();
-  const [newName, setNewName] = useState("");
   const [selected, setSelected] = useState(meName ? [meName] : []);
   const [gameType, setGameType] = useState("x01");
   const [startScore, setStartScore] = useState(501);
@@ -30,16 +29,11 @@ export default function Setup({ players, addPlayer, onStart, back, me, playerCol
   const add = (u) => setSelected((s) => (s.length < 4 && !s.includes(u) ? [...s, u] : s));
   const remove = (u) => setSelected((s) => s.filter((x) => x !== u));
 
-  const onAddNew = async () => {
-    const u = newName.trim();
-    if (!u) return;
-    await addPlayer(u, true);
-    add(u);
-    setNewName("");
-  };
+  const eligible = players
+    .filter((p) => p.authId)
+    .map((p) => p.username);
 
-  const rosterOptions = players
-    .map((p) => p.username)
+  const rosterOptions = eligible
     .filter((u) => u.toLowerCase() !== meName.toLowerCase() && !selected.includes(u));
 
   const solo = selected.length === 1;
@@ -289,22 +283,9 @@ export default function Setup({ players, addPlayer, onStart, back, me, playerCol
         )}
         {rosterOptions.length === 0 && selected.length < (exactTwo ? 2 : 4) && (
           <p className="tag mt-12" style={{ textTransform: "none", letterSpacing: 0 }}>
-            No other players to pick yet — add a guest below. (People appear here once they&apos;ve signed in with a display name.)
+            No other players available. Players need a login account to appear here.
           </p>
         )}
-
-        <div className="row mt-12">
-          <input
-            className="input"
-            placeholder="or add a new name (guest)"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onAddNew()}
-          />
-          <button className="btn" onClick={onAddNew}>
-            Add
-          </button>
-        </div>
 
         {solo && !needsTwo && (
           <p className="tag" style={{ marginTop: 10, color: "var(--amber)", textTransform: "none", letterSpacing: 0 }}>

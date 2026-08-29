@@ -64,7 +64,7 @@ export async function POST(req) {
       }));
       const { data: players, error: pe } = await admin
         .from("players")
-        .select("username, hidden, created_at")
+        .select("username, hidden, created_at, auth_id")
         .order("created_at", { ascending: true });
       if (pe) throw pe;
       return json({
@@ -73,6 +73,7 @@ export async function POST(req) {
           username: p.username,
           hidden: !!p.hidden,
           createdAt: p.created_at,
+          authId: p.auth_id || null,
         })),
       });
     }
@@ -176,6 +177,14 @@ export async function POST(req) {
         }
       }
 
+      return json({ ok: true });
+    }
+
+    if (action === "linkPlayer") {
+      const { username, authId } = body;
+      if (!username) return json({ error: "Missing player." }, 400);
+      const { error } = await admin.from("players").update({ auth_id: authId || null }).eq("username", username);
+      if (error) throw error;
       return json({ ok: true });
     }
 

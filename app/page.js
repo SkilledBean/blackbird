@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { supabase, isConfigured } from "@/lib/supabase";
-import { getPlayers, addPlayer as dbAddPlayer, setPlayerHidden as dbSetPlayerHidden, setPlayerColor as dbSetPlayerColor, getGameResults, recordGame } from "@/lib/db";
+import { getPlayers, addPlayer as dbAddPlayer, linkPlayerAuth as dbLinkPlayerAuth, setPlayerHidden as dbSetPlayerHidden, setPlayerColor as dbSetPlayerColor, getGameResults, recordGame } from "@/lib/db";
 import { computeStats, eloMapFromPlayers, applyEloUpdate } from "@/lib/stats";
 import { ACCENTS, ADMIN_EMAIL, defaultPlayerColor } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
@@ -224,15 +224,20 @@ export default function Page() {
     return () => document.removeEventListener("visibilitychange", onFocus);
   }, [session, refresh]);
 
-  // ensure the signed-in user (by display name) is in the shared player list,
-  // so everyone shows up in each other's "add player" dropdown
   useEffect(() => {
     if (!session || !dataReady) return;
     const meName = (session.user?.user_metadata?.display_name || "").trim();
-    if (!meName) return;
-    if (players.some((p) => p.username.toLowerCase() === meName.toLowerCase())) return;
+    const meId = session.user?.id;
+    if (!meName || !meId) return;
+    const existing = players.find((p) => p.username.toLowerCase() === meName.toLowerCase());
+    if (existing) {
+      if (!existing.authId) {
+        (async () => { await dbLinkPlayerAuth(existing.username, meId); await refresh(); })();
+      }
+      return;
+    }
     (async () => {
-      await dbAddPlayer(meName);
+      await dbAddPlayer(meName, false, meId);
       await refresh();
     })();
   }, [session, dataReady, players, refresh]);
@@ -423,7 +428,6 @@ export default function Page() {
         {view === "setup" && (
           <Setup
             players={players}
-            addPlayer={addPlayer}
             playerColors={playerColors}
             me={session.user?.user_metadata?.display_name || ""}
             onStart={(game) => {
@@ -516,7 +520,7 @@ export default function Page() {
           />
         )}
         {view === "admin" && isAdmin && (
-          <Admin stats={stats} addPlayer={addPlayer} refreshData={refresh} back={() => setView("account")} />
+          <Admin stats={stats} addPlayer={addPlayer} refreshData={refresh} back={() => setView("account")} playerColors={playerColors} />
         )}
 
         </div>

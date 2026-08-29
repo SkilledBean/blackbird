@@ -1,13 +1,15 @@
-import { useEffect, useState, useCallback } from "react";
-import { BackBar } from "./ui";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { BackBar, PlayerBadge } from "./ui";
 import { supabase } from "@/lib/supabase";
 import { SKINS } from "@/lib/skins";
+import { defaultPlayerColor } from "@/lib/constants";
 
-function PencilIcon() {
+function DotsIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11.5 1.5l3 3L5 14H2v-3z" />
-      <path d="M9.5 3.5l3 3" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <circle cx="8" cy="3" r="1.5" />
+      <circle cx="8" cy="8" r="1.5" />
+      <circle cx="8" cy="13" r="1.5" />
     </svg>
   );
 }
@@ -38,13 +40,49 @@ function fmtDate(iso) {
   }
 }
 
-export default function Admin({ stats, addPlayer, back, refreshData }) {
+function DropdownMenu({ items, onClose }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [onClose]);
+  return (
+    <div ref={ref} style={{
+      position: "absolute", top: "100%", right: 0, marginTop: 4,
+      background: "var(--surface)", border: "1px solid var(--line)",
+      borderRadius: 12, padding: "6px 0", minWidth: 180, zIndex: 10,
+      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+    }}>
+      {items.map((item, i) => (
+        <button
+          key={i}
+          onClick={() => { item.action(); onClose(); }}
+          disabled={item.disabled}
+          style={{
+            display: "block", width: "100%", padding: "10px 16px",
+            background: "none", border: "none", cursor: item.disabled ? "default" : "pointer",
+            textAlign: "left", fontSize: "calc(14px * var(--fs))", fontFamily: "inherit",
+            color: item.danger ? "var(--red)" : "var(--ink)",
+            opacity: item.disabled ? 0.4 : 1,
+          }}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export default function Admin({ stats, addPlayer, back, refreshData, playerColors }) {
   const [data, setData] = useState(null);
   const [edits, setEdits] = useState({});
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
   const [busy, setBusy] = useState("");
   const [newName, setNewName] = useState("");
+  const [openMenu, setOpenMenu] = useState(null);
+  const [editing, setEditing] = useState(null);
   const [renaming, setRenaming] = useState(null);
   const [renameTo, setRenameTo] = useState("");
   const [skin, setSkin] = useState("default");
@@ -55,9 +93,6 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
     });
   }, []);
 
-  // Experimental skin, stored only on THIS account's user_metadata — other
-  // players keep the normal look. Full reload so the whole app re-renders
-  // in the new skin.
   const pickSkin = async (id) => {
     setBusy("skin");
     try {
@@ -85,9 +120,7 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const flash = (m) => {
     setOk(m);
@@ -118,7 +151,7 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
   };
 
   const deleteUser = async (id, email) => {
-    if (typeof window !== "undefined" && !window.confirm(`Delete the account ${email}? This removes their login permanently.`)) return;
+    if (typeof window !== "undefined" && !window.confirm(`Delete the login account for ${email}? This removes their ability to sign in.`)) return;
     setBusy(id);
     setErr("");
     try {
@@ -134,7 +167,7 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
   };
 
   const removePlayer = async (username) => {
-    if (typeof window !== "undefined" && !window.confirm(`Remove "${username}" from the player list? Their past games stay recorded, but they leave the roster and standings.`)) return;
+    if (typeof window !== "undefined" && !window.confirm(`Remove "${username}" from the player list and delete all their game history?`)) return;
     setBusy("p:" + username);
     setErr("");
     try {
@@ -191,7 +224,8 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
     }
   };
 
-  const togglePlayerHidden = async (username, hidden) => {    setBusy("p:" + username);
+  const togglePlayerHidden = async (username, hidden) => {
+    setBusy("p:" + username);
     setErr("");
     try {
       await callAdmin({ action: "setHidden", username, hidden: !hidden });
@@ -223,7 +257,50 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
     }
   };
 
+  const linkPlayer = async (username, authId) => {
+    setBusy("p:" + username);
+    setErr("");
+    try {
+      await callAdmin({ action: "linkPlayer", username, authId });
+      flash(authId ? `Linked ${username} to account.` : `Unlinked ${username}.`);
+      await load();
+      refreshData && refreshData();
+    } catch (er) {
+      setErr(er.message);
+    } finally {
+      setBusy("");
+    }
+  };
+
   const setEdit = (id, key, val) => setEdits((prev) => ({ ...prev, [id]: { ...prev[id], [key]: val } }));
+
+  const merged = [];
+  if (data) {
+    const userByName = {};
+    for (const u of data.users) {
+      const dn = (u.displayName || "").toLowerCase();
+      if (dn) userByName[dn] = u;
+    }
+    const usedUserIds = new Set();
+
+    for (const p of data.players) {
+      let account = null;
+      if (p.authId) {
+        account = data.users.find((u) => u.id === p.authId) || null;
+      }
+      if (!account) {
+        account = userByName[(p.username || "").toLowerCase()] || null;
+      }
+      if (account) usedUserIds.add(account.id);
+      merged.push({ player: p, account });
+    }
+
+    for (const u of data.users) {
+      if (!usedUserIds.has(u.id)) {
+        merged.push({ player: null, account: u });
+      }
+    }
+  }
 
   return (
     <div className="fade">
@@ -240,12 +317,10 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
         </div>
       )}
 
-      {/* ---------- Theme lab (this account only) ---------- */}
       <div className="card mb-12">
-        <div className="tag" style={{ marginBottom: 4 }}>Theme lab — experimental</div>
+        <div className="tag" style={{ marginBottom: 4 }}>Theme lab</div>
         <p className="subtle" style={{ marginTop: 4 }}>
-          Try a full app look: colors, shapes, fonts, and layout. Applies only to your
-          account and reloads the app when selected.
+          Applies only to your account. Reloads the app when selected.
         </p>
         <div className="grid-4">
           {SKINS.map((s) => (
@@ -260,11 +335,6 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
             </button>
           ))}
         </div>
-        {skin !== "default" && (
-          <div className="tag" style={{ marginTop: 10, textTransform: "none", letterSpacing: 0 }}>
-            Active: {SKINS.find((s) => s.id === skin)?.label} — {SKINS.find((s) => s.id === skin)?.blurb}
-          </div>
-        )}
       </div>
 
       {!data ? (
@@ -273,7 +343,6 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
         </div>
       ) : (
         <>
-          {/* ---------- Add new player ---------- */}
           <div className="card mb-12">
             <div className="tag" style={{ marginBottom: 8 }}>Add new player</div>
             <div className="row">
@@ -281,9 +350,7 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
                 className="input"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") addNewPlayer();
-                }}
+                onKeyDown={(e) => { if (e.key === "Enter") addNewPlayer(); }}
                 placeholder="Player name"
                 style={{ flex: 1 }}
               />
@@ -298,22 +365,51 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
             </div>
           </div>
 
-          {/* ---------- Players + stats ---------- */}
           <div className="tag" style={{ marginBottom: 10 }}>
-            Players &amp; stats ({data.players.length})
+            People ({merged.length})
           </div>
+
           <div className="stack mb-12">
-            {data.players.length === 0 && (
+            {merged.length === 0 && (
               <div className="card">
-                <p className="subtle" style={{ margin: 0 }}>No players yet.</p>
+                <p className="subtle" style={{ margin: 0 }}>No players or accounts yet.</p>
               </div>
             )}
-            {data.players.map((p) => {
-              const s = stats[p.username] || { games: 0, wins: 0, winPct: 0, x01: { threeDartAvg: 0 } };
-              const busyHere = busy === "p:" + p.username;
-              const isRenaming = renaming === p.username;
+            {merged.map((entry) => {
+              const { player: p, account: acct } = entry;
+              const username = p?.username || acct?.displayName || "?";
+              const s = stats[username] || { games: 0, wins: 0, winPct: 0, x01: { threeDartAvg: 0 } };
+              const key = p ? "p:" + p.username : "u:" + acct.id;
+              const busyHere = busy === key || busy === "p:" + username || (acct && busy === acct.id);
+              const isRenaming = renaming === username;
+              const isEditing = editing === username;
+              const hasAccount = !!acct;
+              const hasPlayer = !!p;
+              const color = playerColors?.[username] || defaultPlayerColor(username);
+
+              const menuItems = [];
+              if (hasPlayer) {
+                menuItems.push({ label: "Rename", action: () => { setRenaming(username); setRenameTo(username); } });
+                menuItems.push({ label: p.hidden ? "Show on leaderboard" : "Hide from leaderboard", action: () => togglePlayerHidden(username, p.hidden) });
+                menuItems.push({ label: "Reset score", danger: true, action: () => resetScore(username, s.games) });
+                menuItems.push({ label: "Remove player", danger: true, action: () => removePlayer(username) });
+              }
+              if (hasAccount) {
+                menuItems.push({ label: "Edit account", action: () => setEditing(isEditing ? null : username) });
+                menuItems.push({ label: "Delete account", danger: true, action: () => deleteUser(acct.id, acct.email) });
+              }
+              if (hasPlayer && !hasAccount) {
+                const matchable = data.users.filter((u) => !data.players.some((pp) => pp.authId === u.id));
+                if (matchable.length > 0) {
+                  menuItems.push({ label: "Link to account…", action: () => setEditing(username) });
+                }
+              }
+              if (hasPlayer && hasAccount && p.authId) {
+                menuItems.push({ label: "Unlink account", action: () => linkPlayer(username, null) });
+              }
+
               return (
-                <div className="card" key={p.username}>
+                <div className="card" key={key}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                     {isRenaming ? (
                       <div className="row" style={{ flex: 1, minWidth: 0 }}>
@@ -321,160 +417,162 @@ export default function Admin({ stats, addPlayer, back, refreshData }) {
                           className="input"
                           value={renameTo}
                           onChange={(e) => setRenameTo(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === "Enter") renamePlayer(p.username); if (e.key === "Escape") setRenaming(null); }}
+                          onKeyDown={(e) => { if (e.key === "Enter") renamePlayer(username); if (e.key === "Escape") setRenaming(null); }}
                           placeholder="New name"
                           autoFocus
                           style={{ flex: 1 }}
                         />
-                        <button className="btn btn-primary" style={{ flex: "none", minWidth: 64 }} disabled={busyHere || !renameTo.trim() || renameTo.trim() === p.username} onClick={() => renamePlayer(p.username)}>
+                        <button className="btn btn-primary" style={{ flex: "none", minWidth: 64 }} disabled={busyHere || !renameTo.trim() || renameTo.trim() === username} onClick={() => renamePlayer(username)}>
                           {busyHere ? "…" : "Save"}
                         </button>
                         <button className="btn" style={{ flex: "none" }} onClick={() => setRenaming(null)}>Cancel</button>
                       </div>
                     ) : (
                       <>
-                        <div style={{ fontWeight: 800, fontSize: "calc(16px * var(--fs))", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {p.username}
+                        <PlayerBadge username={username} color={color} size={32} showName={false} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 800, fontSize: "calc(16px * var(--fs))", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {username}
+                          </div>
+                          <div style={{ display: "flex", gap: 6, marginTop: 3, flexWrap: "wrap" }}>
+                            {hasAccount && (
+                              <span className="tag" style={{ background: "var(--accent-soft)", color: "var(--accent)", padding: "2px 8px", borderRadius: 999, fontSize: "calc(10px * var(--fs-chrome))" }}>
+                                logged in
+                              </span>
+                            )}
+                            {!hasAccount && hasPlayer && (
+                              <span className="tag" style={{ background: "var(--surface-2)", border: "1px solid var(--line)", padding: "2px 8px", borderRadius: 999, fontSize: "calc(10px * var(--fs-chrome))" }}>
+                                no account
+                              </span>
+                            )}
+                            {p?.hidden && (
+                              <span className="tag" style={{ background: "var(--surface-2)", border: "1px solid var(--line)", padding: "2px 8px", borderRadius: 999, fontSize: "calc(10px * var(--fs-chrome))" }}>
+                                hidden
+                              </span>
+                            )}
+                            {!hasPlayer && hasAccount && (
+                              <span className="tag" style={{ background: "var(--surface-2)", border: "1px solid var(--line)", padding: "2px 8px", borderRadius: 999, fontSize: "calc(10px * var(--fs-chrome))" }}>
+                                account only
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <button
-                          className="btn"
-                          style={{ padding: "6px 8px", flex: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
-                          onClick={() => { setRenaming(p.username); setRenameTo(p.username); }}
-                          title="Rename player"
-                        >
-                          <PencilIcon />
-                        </button>
+                        <div style={{ position: "relative", flex: "none" }}>
+                          <button
+                            className="btn"
+                            style={{ padding: "6px 8px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                            onClick={() => setOpenMenu(openMenu === username ? null : username)}
+                            aria-label="Actions"
+                          >
+                            <DotsIcon />
+                          </button>
+                          {openMenu === username && (
+                            <DropdownMenu items={menuItems} onClose={() => setOpenMenu(null)} />
+                          )}
+                        </div>
                       </>
                     )}
-                    {!isRenaming && p.hidden && (
-                      <span
-                        className="tag"
-                        style={{ background: "var(--surface-2)", border: "1px solid var(--line)", padding: "3px 8px", borderRadius: 999 }}
-                      >
-                        hidden
-                      </span>
-                    )}
-                  </div>
-                  <div className="grid-4" style={{ marginBottom: 12 }}>
-                    <div className="mini">
-                      <div className="num">{s.games}</div>
-                      <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>games</div>
-                    </div>
-                    <div className="mini">
-                      <div className="num">{s.wins}</div>
-                      <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>wins</div>
-                    </div>
-                    <div className="mini">
-                      <div className="num">{s.games ? Math.round(s.winPct) + "%" : "—"}</div>
-                      <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>win rate</div>
-                    </div>
-                    <div className="mini">
-                      <div className="num">{s.x01 && s.x01.threeDartAvg ? s.x01.threeDartAvg.toFixed(1) : "—"}</div>
-                      <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>3-dart avg</div>
-                    </div>
-                  </div>
-                  <div className="row" style={{ marginBottom: 8 }}>
-                    <button
-                      className="btn"
-                      style={{ flex: 1 }}
-                      disabled={busyHere}
-                      onClick={() => togglePlayerHidden(p.username, p.hidden)}
-                    >
-                      {busyHere ? "…" : p.hidden ? "Show on leaderboard" : "Hide from leaderboard"}
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      style={{ flex: 1 }}
-                      disabled={busyHere}
-                      onClick={() => removePlayer(p.username)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <button
-                    className="btn btn-danger"
-                    style={{ width: "100%" }}
-                    disabled={busyHere}
-                    onClick={() => resetScore(p.username, s.games)}
-                  >
-                    Reset score
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* ---------- Accounts ---------- */}
-          <div className="tag" style={{ margin: "26px 0 10px" }}>
-            Login accounts ({data.users.length})
-          </div>
-          <p className="tag" style={{ textTransform: "none", letterSpacing: 0, marginTop: 0, marginBottom: 12 }}>
-            Changing a display name updates the account only. Stats already recorded stay under the
-            old name.
-          </p>
-          <div className="stack">
-            {data.users.map((u) => {
-              const e = edits[u.id] || { email: "", password: "", displayName: "" };
-              const busyHere = busy === u.id;
-              return (
-                <div className="card" key={u.id}>
-                  <div style={{ marginBottom: 16 }}>
-                    <div className="tag" style={{ marginBottom: 7 }}>Display name</div>
-                    <input
-                      className="input"
-                      value={e.displayName}
-                      onChange={(ev) => setEdit(u.id, "displayName", ev.target.value)}
-                      placeholder="display name"
-                    />
                   </div>
 
-                  <div style={{ marginBottom: 16 }}>
-                    <div className="tag" style={{ marginBottom: 7 }}>Email</div>
-                    <input
-                      className="input"
-                      value={e.email}
-                      onChange={(ev) => setEdit(u.id, "email", ev.target.value)}
-                      placeholder="email"
-                      autoCapitalize="none"
-                    />
-                  </div>
+                  {hasPlayer && (
+                    <div className="grid-4" style={{ marginBottom: isEditing ? 12 : 0 }}>
+                      <div className="mini">
+                        <div className="num">{s.games}</div>
+                        <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>games</div>
+                      </div>
+                      <div className="mini">
+                        <div className="num">{s.wins}</div>
+                        <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>wins</div>
+                      </div>
+                      <div className="mini">
+                        <div className="num">{s.games ? Math.round(s.winPct) + "%" : "—"}</div>
+                        <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>win rate</div>
+                      </div>
+                      <div className="mini">
+                        <div className="num">{s.x01 && s.x01.threeDartAvg ? s.x01.threeDartAvg.toFixed(1) : "—"}</div>
+                        <div className="tag" style={{ marginTop: 2, fontSize: "calc(10px * var(--fs-chrome))" }}>3-dart avg</div>
+                      </div>
+                    </div>
+                  )}
 
-                  <div style={{ paddingTop: 16, borderTop: "1px solid var(--line)" }}>
-                    <div className="tag" style={{ marginBottom: 7 }}>Reset password</div>
-                    <input
-                      className="input"
-                      type="text"
-                      value={e.password}
-                      onChange={(ev) => setEdit(u.id, "password", ev.target.value)}
-                      placeholder="new password"
-                      autoCapitalize="none"
-                    />
-                    <p className="tag" style={{ textTransform: "none", letterSpacing: 0, margin: "8px 0 0" }}>
-                      Leave blank to keep their current password.
-                    </p>
-                  </div>
+                  {isEditing && hasAccount && (() => {
+                    const e = edits[acct.id] || { email: "", password: "", displayName: "" };
+                    return (
+                      <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, marginTop: hasPlayer ? 0 : 0 }}>
+                        <div style={{ marginBottom: 12 }}>
+                          <div className="tag" style={{ marginBottom: 6 }}>Email</div>
+                          <input
+                            className="input"
+                            value={e.email}
+                            onChange={(ev) => setEdit(acct.id, "email", ev.target.value)}
+                            placeholder="email"
+                            autoCapitalize="none"
+                          />
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                          <div className="tag" style={{ marginBottom: 6 }}>Reset password</div>
+                          <input
+                            className="input"
+                            type="text"
+                            value={e.password}
+                            onChange={(ev) => setEdit(acct.id, "password", ev.target.value)}
+                            placeholder="new password (leave blank to keep)"
+                            autoCapitalize="none"
+                          />
+                        </div>
+                        <p className="tag" style={{ textTransform: "none", letterSpacing: 0, margin: "0 0 12px" }}>
+                          Joined {fmtDate(acct.createdAt)}
+                        </p>
+                        <div className="row">
+                          <button
+                            className="btn btn-primary"
+                            style={{ flex: 1 }}
+                            disabled={busyHere}
+                            onClick={() => saveUser(acct.id)}
+                          >
+                            {busyHere ? "Saving…" : "Save"}
+                          </button>
+                          <button className="btn" style={{ flex: "none" }} onClick={() => setEditing(null)}>
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
-                  <p className="tag" style={{ textTransform: "none", letterSpacing: 0, margin: "16px 0 0" }}>
-                    Joined {fmtDate(u.createdAt)}
-                  </p>
-                  <div className="row" style={{ marginTop: 16 }}>
-                    <button
-                      className="btn btn-primary"
-                      style={{ flex: 1 }}
-                      disabled={busyHere}
-                      onClick={() => saveUser(u.id)}
-                    >
-                      {busyHere ? "Saving…" : "Save changes"}
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      style={{ flex: 1 }}
-                      disabled={busyHere}
-                      onClick={() => deleteUser(u.id, u.email)}
-                    >
-                      Delete account
-                    </button>
-                  </div>
+                  {isEditing && !hasAccount && hasPlayer && (() => {
+                    const unlinkedUsers = data.users.filter((u) => !data.players.some((pp) => pp.authId === u.id));
+                    return (
+                      <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12 }}>
+                        <div className="tag" style={{ marginBottom: 6 }}>Link to an account</div>
+                        {unlinkedUsers.length === 0 ? (
+                          <p className="subtle" style={{ margin: 0 }}>No unlinked accounts available.</p>
+                        ) : (
+                          <div className="row">
+                            <select
+                              className="select"
+                              style={{ flex: 1 }}
+                              defaultValue=""
+                              onChange={(ev) => {
+                                if (ev.target.value) linkPlayer(username, ev.target.value);
+                                setEditing(null);
+                              }}
+                            >
+                              <option value="">Select an account…</option>
+                              {unlinkedUsers.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                  {u.displayName || u.email}
+                                </option>
+                              ))}
+                            </select>
+                            <button className="btn" style={{ flex: "none" }} onClick={() => setEditing(null)}>
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
