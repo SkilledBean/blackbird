@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
-import { PlayerBadge } from "./ui";
+import { PlayerBadge, UndoIcon } from "./ui";
 
 const GRID = [20, 19, 18, 17, 16, 15, 14, 13, 12];
 const LINES = [
@@ -234,16 +234,16 @@ export default function PlayTicTacToe({ game, resume, onProgress, onFinish, onQu
           })}
         </div>
 
-        <div className="grid-4 mt-12">
+        <div className="grid-3 mt-12">
           <button className="chip" disabled style={{ opacity: 0.3 }}>25</button>
           <button className="chip" disabled style={{ opacity: 0.3 }}>Bull</button>
           <button className="chip" onClick={() => addDart({ n: 0, mult: 0 })} disabled={turnDarts.length >= 3}>
             Miss
           </button>
-          <button className="chip" onClick={undo} disabled={!turnDarts.length && !history.length}>
-            Undo
-          </button>
         </div>
+        <button className="chip chip-undo" onClick={undo} disabled={!turnDarts.length && !history.length}>
+          <UndoIcon /> Undo
+        </button>
 
         <div className="flex-wrap" style={{ marginTop: 10, minHeight: 30 }}>
           {turnDarts.map((d, i) => (

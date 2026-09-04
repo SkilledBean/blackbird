@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Stat, PlayerBadge } from "./ui";
+import { Stat, PlayerBadge, pressProps } from "./ui";
 import { BarChart } from "./Charts";
 import { BASE_ELO } from "@/lib/constants";
 
@@ -132,34 +132,27 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
         <Stat label="Top avg" value={topAvg ? topAvg.toFixed(1) : "—"} />
       </div>
 
-      <div className="card mb-12">
-        <h3 className="section-title">Games · Last 3 Months</h3>
-        <BarChart data={weekly} />
-      </div>
-
       <button
-        className="btn btn-primary"
+        className="btn btn-primary mb-12"
         style={{ width: "100%", fontSize: "calc(16px * var(--fs))", padding: 16 }}
         onClick={() => setView("setup")}
       >
         Start a Game
       </button>
 
+      <div className="card mb-12">
+        <h3 className="section-title">Games · Last 3 Months</h3>
+        <BarChart data={weekly} />
+      </div>
+
       <hr className="sep" />
       <div className="between" style={{ marginBottom: 12 }}>
         <h2 className="section-title" style={{ margin: 0 }}>Top of the Board</h2>
         <div style={{ display: "flex", gap: 4 }}>
           <button
-            className="btn"
-            style={{
-              padding: "6px 10px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: boardMode === "podium" ? "var(--accent-soft)" : undefined,
-              color: boardMode === "podium" ? "var(--accent)" : undefined,
-              borderColor: boardMode === "podium" ? "var(--accent)" : undefined,
-            }}
+            className={`btn ${boardMode === "podium" ? "btn-primary" : ""}`}
+            style={{ padding: "6px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+            aria-pressed={boardMode === "podium"}
             onClick={() => setBoardMode("podium")}
             aria-label="Podium view"
             title="Podium"
@@ -167,16 +160,9 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
             <PodiumIcon />
           </button>
           <button
-            className="btn"
-            style={{
-              padding: "6px 10px",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: boardMode === "list" ? "var(--accent-soft)" : undefined,
-              color: boardMode === "list" ? "var(--accent)" : undefined,
-              borderColor: boardMode === "list" ? "var(--accent)" : undefined,
-            }}
+            className={`btn ${boardMode === "list" ? "btn-primary" : ""}`}
+            style={{ padding: "6px 10px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+            aria-pressed={boardMode === "list"}
             onClick={() => setBoardMode("list")}
             aria-label="List view"
             title="List"
@@ -192,7 +178,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
 
       {boardMode === "podium" && ranked.length >= 3 && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 8, padding: "16px 0 0" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 8, padding: "16px 0 0", borderBottom: "2px solid var(--line-strong)" }}>
             {podiumOrder.map((r, i) => {
               const h = podiumHeights[i];
               const isFirst = i === 1;
@@ -200,7 +186,8 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
                 <div
                   key={r.u}
                   className="podium-col"
-                  onClick={() => openProfile(r.u)}
+                  {...pressProps(() => openProfile(r.u))}
+                  aria-label={`${podiumLabels[i]}: ${r.u}, ${Math.round(r.elo)} Elo`}
                   style={{
                     flex: 1,
                     maxWidth: isFirst ? 160 : 130,
@@ -227,15 +214,15 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
                     {Math.round(r.elo)}
                   </div>
                   <div className="podium-bar" style={{
+                    "--podium-h": `${h}px`,
                     width: "100%",
-                    height: h,
                     marginTop: 8,
                     borderRadius: "12px 12px 0 0",
                     background: isFirst
                       ? "linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 60%, transparent))"
-                      : "var(--surface-2)",
-                    border: isFirst ? "none" : "1px solid var(--line)",
-                    borderBottom: "none",
+                      : i === 0
+                      ? "color-mix(in srgb, var(--accent) 34%, var(--surface))"
+                      : "color-mix(in srgb, var(--accent) 18%, var(--surface))",
                     display: "flex",
                     alignItems: "flex-end",
                     justifyContent: "center",
@@ -244,7 +231,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
                     <span style={{
                       fontWeight: 800,
                       fontSize: "calc(14px * var(--fs))",
-                      color: isFirst ? "#fff" : "var(--muted)",
+                      color: isFirst ? "#fff" : "var(--ink-soft)",
                       letterSpacing: "0.04em",
                     }}>
                       {podiumLabels[i]}
@@ -262,7 +249,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
                   key={r.u}
                   className="card pad-sm clickable"
                   style={{ display: "flex", alignItems: "center", gap: 12 }}
-                  onClick={() => openProfile(r.u)}
+                  {...pressProps(() => openProfile(r.u))}
                 >
                   <div className="num" style={{ fontSize: "calc(16px * var(--fs))", width: "calc(22px * var(--fs))", color: "var(--muted)" }}>
                     {i + 4}
@@ -290,7 +277,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
               key={r.u}
               className="card pad-sm clickable"
               style={{ display: "flex", alignItems: "center", gap: 12 }}
-              onClick={() => openProfile(r.u)}
+              {...pressProps(() => openProfile(r.u))}
             >
               <div
                 className="num"
@@ -319,7 +306,7 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
               key={r.u}
               className="card pad-sm clickable"
               style={{ display: "flex", alignItems: "center", gap: 12 }}
-              onClick={() => openProfile(r.u)}
+              {...pressProps(() => openProfile(r.u))}
             >
               <div className="num" style={{ fontSize: "calc(20px * var(--fs))", width: "calc(24px * var(--fs))", color: i === 0 ? "var(--amber)" : "var(--muted)" }}>
                 {i + 1}

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartValue, dartLabel } from "@/lib/darts";
 import Celebration from "./Celebration";
-import { PlayerBadge } from "./ui";
+import { PlayerBadge, UndoIcon } from "./ui";
 
 const TARGETS = [20, 19, 18, "D", 17, 16, 15, "T", "B"];
 
@@ -118,6 +118,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
     if (next.length === 3) return commit(next);
     setMsg("");
     setTurnDarts(next);
+    setMult(1); // back to Single after every dart — a stuck Double/Triple is the easiest way to mis-score
   };
 
   const undo = () => {
@@ -242,7 +243,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
           {[1, 2, 3].map((m) => (
             <button
               key={m}
-              className={`btn ${mult === m ? "btn-amber" : ""}`}
+              className={`btn ${mult === m ? "btn-primary" : ""}`}
               style={{ flex: 1 }}
               onClick={() => setMult(m)}
             >
@@ -264,14 +265,14 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
           ))}
         </div>
 
-        <div className="grid-4 mt-12">
+        <div className="grid-3 mt-12">
           <button className="chip" onClick={() => addDart({ n: 25, mult: 1 })}>25</button>
           <button className="chip" onClick={() => addDart({ n: 25, mult: 2 })}>Bull</button>
           <button className="chip" onClick={() => addDart({ n: 0, mult: 0 })}>Miss</button>
-          <button className="chip" onClick={undo} disabled={!turnDarts.length && !history.length}>
-            Undo
-          </button>
         </div>
+        <button className="chip chip-undo" onClick={undo} disabled={!turnDarts.length && !history.length}>
+          <UndoIcon /> Undo
+        </button>
 
         {!castActive && (
           <div style={{ marginTop: 14 }}>

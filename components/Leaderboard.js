@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BackBar, PlayerBadge } from "./ui";
+import { BackBar, PlayerBadge, pressProps } from "./ui";
 import { BASE_ELO } from "@/lib/constants";
 
 export default function Leaderboard({ usernames, stats, elo, openProfile, openRecords, back, playerColors }) {
@@ -88,7 +88,7 @@ export default function Leaderboard({ usernames, stats, elo, openProfile, openRe
               key={r.u}
               className="card pad-sm clickable"
               style={{ display: "flex", alignItems: "center", gap: 12 }}
-              onClick={() => openProfile(r.u)}
+              {...pressProps(() => openProfile(r.u))}
             >
               <div className="num" style={{ fontSize: "calc(20px * var(--fs))", width: "calc(22px * var(--fs))", color: i === 0 ? "var(--amber)" : "var(--muted)" }}>
                 {i + 1}

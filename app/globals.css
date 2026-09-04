@@ -178,38 +178,54 @@ select {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 12px 36px rgba(0, 0, 0, 0.1);
 }
+/* keyboard focus ring for anything activatable */
+.btn:focus-visible,
+.chip:focus-visible,
+.navbtn:focus-visible,
+.clickable:focus-visible,
+.podium-col:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.podium-col,
+.clickable {
+  -webkit-tap-highlight-color: transparent;
+}
 .podium-col {
   cursor: pointer;
+  /* extra height added to the bar on hover/press; the bar's own height is
+     --podium-h (set inline per column) so the whole box grows upward from
+     its anchored bottom edge — one background, one border, no seams */
+  --podium-lift: 0px;
 }
 .podium-col .podium-bar {
-  position: relative;
-  transition: box-shadow 0.25s ease;
+  height: calc(var(--podium-h, 100px) + var(--podium-lift));
+  transition: height 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.25s ease;
 }
-.podium-col .podium-bar::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  height: 0;
-  border-radius: 12px 12px 0 0;
-  background: inherit;
-  transition: height 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* hover only on devices that actually hover — a tap on a touch screen would
+   otherwise leave the column stuck in its raised state */
+@media (hover: hover) {
+  .podium-col:hover {
+    --podium-lift: 10px;
+  }
+  .podium-col:hover .podium-bar {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  }
 }
-.podium-col:hover .podium-bar {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+.podium-col:active {
+  --podium-lift: 5px;
 }
-.podium-col:hover .podium-bar::before {
-  height: 10px;
-}
-.podium-col:active .podium-bar::before {
-  height: 5px;
+.podium-col:active .podium-bar {
   transition-duration: 0.08s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .podium-col:hover .podium-bar::before,
-  .podium-col:active .podium-bar::before {
-    height: 0;
+  .podium-col:hover,
+  .podium-col:active {
+    --podium-lift: 0px;
+  }
+  .podium-col .podium-bar {
+    transition: none;
   }
   .podium-col:hover .podium-bar {
     box-shadow: none;
@@ -261,10 +277,12 @@ select {
   border-color: var(--amber);
   color: #fff;
 }
+/* selected option — same language as the primary button so every
+   "this one is chosen" state across the app looks alike */
 .btn-toggle-on {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--surface);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 /* ---------- chips / keypad ---------- */
@@ -292,6 +310,29 @@ select {
 .chip:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* undo: a correction control, not a score key — its own full-width row
+   under the keypad so it is never a neighbour of Miss */
+.chip-undo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  border: 1.5px solid var(--ink-soft);
+  color: var(--ink);
+  font-size: calc(14px * var(--fs));
+  padding: 10px 0;
+}
+.chip-undo:hover {
+  background: var(--surface-2);
+  border-color: var(--ink);
+}
+.chip-undo:disabled {
+  opacity: 0.35;
 }
 
 /* ---------- inputs ---------- */

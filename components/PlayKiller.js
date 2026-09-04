@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
-import { PlayerBadge } from "./ui";
+import { PlayerBadge, UndoIcon } from "./ui";
 
 export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
@@ -36,6 +36,7 @@ export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit,
   const addDart = (dart) => {
     if (turnDarts.length >= 3) return;
     setTurnDarts((d) => [...d, dart]);
+    setMult(1); // back to Single after every dart
   };
 
   const endTurn = () => {
@@ -210,7 +211,7 @@ export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit,
           {[1, 2, 3].map((m) => (
             <button
               key={m}
-              className={`btn ${mult === m ? "btn-amber" : ""}`}
+              className={`btn ${mult === m ? "btn-primary" : ""}`}
               style={{ flex: 1 }}
               onClick={() => setMult(m)}
             >
@@ -227,14 +228,14 @@ export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit,
           ))}
         </div>
 
-        <div className="grid-4 mt-12">
+        <div className="grid-3 mt-12">
           <button className="chip" onClick={() => addDart({ n: 25, mult: 1 })}>25</button>
           <button className="chip" onClick={() => addDart({ n: 25, mult: 2 })}>Bull</button>
           <button className="chip" onClick={() => addDart({ n: 0, mult: 0 })}>Miss</button>
-          <button className="chip" onClick={undo} disabled={!turnDarts.length && !history.length}>
-            Undo
-          </button>
         </div>
+        <button className="chip chip-undo" onClick={undo} disabled={!turnDarts.length && !history.length}>
+          <UndoIcon /> Undo
+        </button>
 
         <div className="row mt-12">
           <button className="btn btn-primary" style={{ flex: 1 }} onClick={endTurn}>

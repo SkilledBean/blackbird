@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
 import Celebration from "./Celebration";
-import { PlayerBadge } from "./ui";
+import { PlayerBadge, UndoIcon } from "./ui";
 
 const BEGINNER_TARGETS = [1, 2, 3, 4, 5, 6, 7];
 const ADVANCED_TARGETS = [15, 16, 17, 18, 19, 20, 25];
@@ -127,6 +127,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
     const next = [...turnDarts, dart];
     if (next.length === 3) return commit(next);
     setTurnDarts(next);
+    setMult(1); // back to Single after every dart — a stuck Double/Triple is the easiest way to mis-score
   };
 
   const undo = () => {
@@ -248,7 +249,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
           {[1, 2, 3].map((m) => (
             <button
               key={m}
-              className={`btn ${mult === m ? "btn-amber" : ""}`}
+              className={`btn ${mult === m ? "btn-primary" : ""}`}
               style={{ flex: 1 }}
               onClick={() => setMult(m)}
             >
@@ -265,14 +266,14 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
           ))}
         </div>
 
-        <div className="grid-4 mt-12">
+        <div className="grid-3 mt-12">
           <button className="chip" onClick={() => addDart({ n: 25, mult: 1 })}>25</button>
           <button className="chip" onClick={() => addDart({ n: 25, mult: 2 })}>Bull</button>
           <button className="chip" onClick={() => addDart({ n: 0, mult: 0 })}>Miss</button>
-          <button className="chip" onClick={undo} disabled={!turnDarts.length && !history.length}>
-            Undo
-          </button>
         </div>
+        <button className="chip chip-undo" onClick={undo} disabled={!turnDarts.length && !history.length}>
+          <UndoIcon /> Undo
+        </button>
 
         {!castActive && (
           <div style={{ marginTop: 14 }}>
