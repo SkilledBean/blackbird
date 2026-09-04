@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BASEBALL_INNINGS } from "@/lib/constants";
 import DartBoard from "./DartBoard";
-import { PlayerBadge } from "./ui";
+import { PlayerBadge, UndoIcon } from "./ui";
 
 export default function PlayBaseball({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players } = game;
@@ -155,8 +155,8 @@ export default function PlayBaseball({ game, resume, onProgress, onFinish, onQui
           ))}
         </div>
 
-        <button className="btn mt-12" style={{ width: "100%" }} onClick={undo} disabled={!turnDarts.length && !history.length}>
-          Undo
+        <button className="chip chip-undo" style={{ marginTop: 12 }} onClick={undo} disabled={!turnDarts.length && !history.length}>
+          <UndoIcon /> Undo
         </button>
 
         {!castActive && (

@@ -3,7 +3,7 @@ import { X01_TARGETS, CRICKET_VALUE } from "@/lib/constants";
 import { markSymbol } from "@/lib/darts";
 import DartBoard from "./DartBoard";
 import Celebration from "./Celebration";
-import { PlayerBadge } from "./ui";
+import { PlayerBadge, UndoIcon } from "./ui";
 
 const numOf = (t) => (t === "B" ? 25 : Number(t));
 
@@ -259,8 +259,8 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
         </div>
 
         <div className="row mt-12">
-          <button className="btn" style={{ flex: 1 }} onClick={undo} disabled={!darts.length && !history.length}>
-            Undo
+          <button className="chip chip-undo" style={{ flex: 1, width: "auto", marginTop: 0, borderRadius: 999 }} onClick={undo} disabled={!darts.length && !history.length}>
+            <UndoIcon /> Undo
           </button>
           <button className="btn btn-primary" style={{ flex: 2 }} onClick={endTurn}>
             End turn

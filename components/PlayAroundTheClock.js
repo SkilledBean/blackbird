@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import DartBoard from "./DartBoard";
 import { dartLabel } from "@/lib/darts";
-import { PlayerBadge } from "./ui";
+import { PlayerBadge, UndoIcon } from "./ui";
 
 export default function PlayAroundTheClock({ game, resume, onProgress, onFinish, onQuit, castActive, playerColors }) {
   const { players, config } = game;
@@ -195,14 +195,14 @@ export default function PlayAroundTheClock({ game, resume, onProgress, onFinish,
           ))}
         </div>
 
-        <div className="grid-4 mt-12">
+        <div className="grid-3 mt-12">
           <button className="chip" onClick={() => addDart({ n: 25, mult: 1 })}>25</button>
           <button className="chip" onClick={() => addDart({ n: 25, mult: 2 })}>Bull</button>
           <button className="chip" onClick={() => addDart({ n: 0, mult: 0 })}>Miss</button>
-          <button className="chip" onClick={undo} disabled={!turnDarts.length && !history.length}>
-            Undo
-          </button>
         </div>
+        <button className="chip chip-undo" onClick={undo} disabled={!turnDarts.length && !history.length}>
+          <UndoIcon /> Undo
+        </button>
 
         {!castActive && (
           <div style={{ marginTop: 14 }}>

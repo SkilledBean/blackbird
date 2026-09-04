@@ -312,6 +312,29 @@ select {
   cursor: not-allowed;
 }
 
+/* undo: a correction control, not a score key — its own full-width row
+   under the keypad so it is never a neighbour of Miss */
+.chip-undo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  border: 1.5px solid var(--ink-soft);
+  color: var(--ink);
+  font-size: calc(14px * var(--fs));
+  padding: 10px 0;
+}
+.chip-undo:hover {
+  background: var(--surface-2);
+  border-color: var(--ink);
+}
+.chip-undo:disabled {
+  opacity: 0.35;
+}
+
 /* ---------- inputs ---------- */
 .input,
 .select {

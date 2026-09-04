@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Modal, PlayerBadge } from "./ui";
+import { Modal, PlayerBadge, UndoIcon } from "./ui";
 import DartBoard from "./DartBoard";
 import Celebration from "./Celebration";
 import { dartValue, dartLabel } from "@/lib/darts";
@@ -261,14 +261,14 @@ export default function PlayX01({ game, resume, onProgress, onFinish, onQuit, ca
           ))}
         </div>
 
-        <div className="grid-4 mt-12">
+        <div className="grid-3 mt-12">
           <button className="chip" onClick={() => addDart({ n: 25, mult: 1 })}>25</button>
           <button className="chip" onClick={() => addDart({ n: 25, mult: 2 })}>Bull</button>
           <button className="chip" onClick={() => addDart({ n: 0, mult: 0 })}>Miss</button>
-          <button className="chip" onClick={undo} disabled={!turnDarts.length && !history.length}>
-            Undo
-          </button>
         </div>
+        <button className="chip chip-undo" onClick={undo} disabled={!turnDarts.length && !history.length}>
+          <UndoIcon /> Undo
+        </button>
 
         {!castActive && (
           <div style={{ marginTop: 14 }}>
