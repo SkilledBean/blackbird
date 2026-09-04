@@ -180,36 +180,39 @@ select {
 }
 .podium-col {
   cursor: pointer;
+  /* extra height added to the bar on hover/press; the bar's own height is
+     --podium-h (set inline per column) so the whole box grows upward from
+     its anchored bottom edge — one background, one border, no seams */
+  --podium-lift: 0px;
 }
 .podium-col .podium-bar {
-  position: relative;
-  transition: box-shadow 0.25s ease;
+  height: calc(var(--podium-h, 100px) + var(--podium-lift));
+  transition: height 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.25s ease;
 }
-.podium-col .podium-bar::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  height: 0;
-  border-radius: 12px 12px 0 0;
-  background: inherit;
-  transition: height 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* hover only on devices that actually hover — a tap on a touch screen would
+   otherwise leave the column stuck in its raised state */
+@media (hover: hover) {
+  .podium-col:hover {
+    --podium-lift: 10px;
+  }
+  .podium-col:hover .podium-bar {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  }
 }
-.podium-col:hover .podium-bar {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+.podium-col:active {
+  --podium-lift: 5px;
 }
-.podium-col:hover .podium-bar::before {
-  height: 10px;
-}
-.podium-col:active .podium-bar::before {
-  height: 5px;
+.podium-col:active .podium-bar {
   transition-duration: 0.08s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .podium-col:hover .podium-bar::before,
-  .podium-col:active .podium-bar::before {
-    height: 0;
+  .podium-col:hover,
+  .podium-col:active {
+    --podium-lift: 0px;
+  }
+  .podium-col .podium-bar {
+    transition: none;
   }
   .podium-col:hover .podium-bar {
     box-shadow: none;

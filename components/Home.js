@@ -227,8 +227,8 @@ export default function Home({ setView, stats, elo, players, gameCount, results,
                     {Math.round(r.elo)}
                   </div>
                   <div className="podium-bar" style={{
+                    "--podium-h": `${h}px`,
                     width: "100%",
-                    height: h,
                     marginTop: 8,
                     borderRadius: "12px 12px 0 0",
                     background: isFirst
