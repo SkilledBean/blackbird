@@ -36,6 +36,7 @@ export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit,
   const addDart = (dart) => {
     if (turnDarts.length >= 3) return;
     setTurnDarts((d) => [...d, dart]);
+    setMult(1); // back to Single after every dart
   };
 
   const endTurn = () => {
@@ -210,7 +211,7 @@ export default function PlayKiller({ game, resume, onProgress, onFinish, onQuit,
           {[1, 2, 3].map((m) => (
             <button
               key={m}
-              className={`btn ${mult === m ? "btn-amber" : ""}`}
+              className={`btn ${mult === m ? "btn-primary" : ""}`}
               style={{ flex: 1 }}
               onClick={() => setMult(m)}
             >

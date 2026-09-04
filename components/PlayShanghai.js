@@ -127,6 +127,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
     const next = [...turnDarts, dart];
     if (next.length === 3) return commit(next);
     setTurnDarts(next);
+    setMult(1); // back to Single after every dart — a stuck Double/Triple is the easiest way to mis-score
   };
 
   const undo = () => {
@@ -248,7 +249,7 @@ export default function PlayShanghai({ game, resume, onProgress, onFinish, onQui
           {[1, 2, 3].map((m) => (
             <button
               key={m}
-              className={`btn ${mult === m ? "btn-amber" : ""}`}
+              className={`btn ${mult === m ? "btn-primary" : ""}`}
               style={{ flex: 1 }}
               onClick={() => setMult(m)}
             >

@@ -118,6 +118,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
     if (next.length === 3) return commit(next);
     setMsg("");
     setTurnDarts(next);
+    setMult(1); // back to Single after every dart — a stuck Double/Triple is the easiest way to mis-score
   };
 
   const undo = () => {
@@ -242,7 +243,7 @@ export default function PlayHalveIt({ game, resume, onProgress, onFinish, onQuit
           {[1, 2, 3].map((m) => (
             <button
               key={m}
-              className={`btn ${mult === m ? "btn-amber" : ""}`}
+              className={`btn ${mult === m ? "btn-primary" : ""}`}
               style={{ flex: 1 }}
               onClick={() => setMult(m)}
             >

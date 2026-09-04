@@ -217,3 +217,21 @@ export function Modal({ children }) {
     </div>
   );
 }
+
+/**
+ * Props that make a non-button element behave like one: focusable, announced
+ * as a button, and activated by Enter or Space as well as click.
+ */
+export function pressProps(onActivate) {
+  return {
+    role: "button",
+    tabIndex: 0,
+    onClick: onActivate,
+    onKeyDown: (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onActivate();
+      }
+    },
+  };
+}

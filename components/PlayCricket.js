@@ -42,6 +42,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
     if (darts.length >= 3) return;
     const maxRing = target === "B" ? 2 : 3;
     setDarts((d) => [...d, { target, ring: Math.min(ring, maxRing) }]);
+    setRing(1); // back to Single after every dart
   };
   const removeDart = (i) => setDarts((d) => d.filter((_, idx) => idx !== i));
 
@@ -220,7 +221,7 @@ export default function PlayCricket({ game, resume, onProgress, onFinish, onQuit
           {[1, 2, 3].map((rr) => (
             <button
               key={rr}
-              className={`btn ${ring === rr ? "btn-amber" : ""}`}
+              className={`btn ${ring === rr ? "btn-primary" : ""}`}
               style={{ flex: 1 }}
               onClick={() => setRing(rr)}
             >

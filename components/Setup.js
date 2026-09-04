@@ -445,7 +445,7 @@ export default function Setup({ players, onStart, back, me, playerColors }) {
         style={{ width: "100%", fontSize: "calc(15px * var(--fs))", padding: 15 }}
         onClick={start}
       >
-        {canStart ? (solo && !needsTwo ? "Start practice" : "Throw first") : exactTwo ? "Pick exactly 2 players" : needsTwo ? "Pick at least 2 players" : "Pick at least 1 player"}
+        {canStart ? (solo && !needsTwo ? "Start Practice" : "Start Game") : exactTwo ? "Pick exactly 2 players" : needsTwo ? "Pick at least 2 players" : "Pick at least 1 player"}
       </button>
     </div>
   );

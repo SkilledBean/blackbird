@@ -8,7 +8,7 @@ import { ACCENTS, ADMIN_EMAIL, defaultPlayerColor } from "@/lib/constants";
 import { applyFontScale } from "@/lib/prefs";
 import { applySkin } from "@/lib/skins";
 import { makeCastCode, openCastChannel, castAvailable, stripHistory } from "@/lib/cast";
-import { Logo, GearIcon, CastIcon, PlayerBadge } from "@/components/ui";
+import { Logo, GearIcon, CastIcon, PlayerBadge, Modal } from "@/components/ui";
 import Auth from "@/components/Auth";
 import Home from "@/components/Home";
 import Setup from "@/components/Setup";
@@ -138,7 +138,12 @@ export default function Page() {
     };
   }, []);
   const [profileUser, setProfileUser] = useState(null);
+  // where a profile was opened from, so Back returns there (Home podium,
+  // standings, records…) instead of always landing on the standings
+  const [profileFrom, setProfileFrom] = useState("leaderboard");
   const [notice, setNotice] = useState("");
+  // Quit asks first: a single mis-tap at the board must not wipe a leg
+  const [quitAsk, setQuitAsk] = useState(false);
 
   useEffect(() => {
     if (!isConfigured) {
@@ -338,6 +343,7 @@ export default function Page() {
   }, [refresh, elo]);
 
   const openProfile = (u) => {
+    if (view !== "profile") setProfileFrom(view);
     setProfileUser(u);
     setView("profile");
   };
@@ -348,6 +354,7 @@ export default function Page() {
   };
 
   const quit = () => {
+    setQuitAsk(false);
     finishingRef.current = true;
     if (castTimer.current) clearTimeout(castTimer.current);
     liveProgress.current = null;
@@ -362,6 +369,7 @@ export default function Page() {
   const ALL_PLAY_VIEWS = Object.values(PLAY_VIEWS);
   const playViewFor = (gt) => PLAY_VIEWS[gt] || "playX01";
   const goPlay = () => setView(live ? playViewFor(live.gameType) : "setup");
+  const askQuit = () => setQuitAsk(true);
 
   if (!isConfigured) {
     return (
@@ -395,9 +403,6 @@ export default function Page() {
               dart scoring system
             </div>
           </div>
-          <button className="btn" style={{ padding: "8px 11px" }} onClick={refresh} title="Refresh">
-            ↻
-          </button>
           <button
             className="btn"
             style={{ padding: "8px 11px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
@@ -484,15 +489,15 @@ export default function Page() {
             )}
           </div>
         )}
-        {view === "playX01" && live && <PlayX01 game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playCricket" && live && <PlayCricket game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playBaseball" && live && <PlayBaseball game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playAroundTheClock" && live && <PlayAroundTheClock game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playKiller" && live && <PlayKiller game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playShanghai" && live && <PlayShanghai game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playHalveIt" && live && <PlayHalveIt game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playGotcha" && live && <PlayGotcha game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
-        {view === "playTicTacToe" && live && <PlayTicTacToe game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={quit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playX01" && live && <PlayX01 game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playCricket" && live && <PlayCricket game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playBaseball" && live && <PlayBaseball game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playAroundTheClock" && live && <PlayAroundTheClock game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playKiller" && live && <PlayKiller game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playShanghai" && live && <PlayShanghai game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playHalveIt" && live && <PlayHalveIt game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playGotcha" && live && <PlayGotcha game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
+        {view === "playTicTacToe" && live && <PlayTicTacToe game={live} resume={liveProgress.current} onProgress={saveProgress} onFinish={finishMatch} onQuit={askQuit} castActive={!!castCode} playerColors={playerColors} />}
         {view === "leaderboard" && (
           <Leaderboard usernames={visibleUsernames} stats={stats} elo={elo} openProfile={openProfile} openRecords={() => setView("records")} back={() => setView("home")} playerColors={playerColors} />
         )}
@@ -508,7 +513,7 @@ export default function Page() {
                 : null
             }
             playerColors={playerColors}
-            back={() => setView("leaderboard")}
+            back={() => setView(profileFrom)}
           />
         )}
         {view === "records" && (
@@ -538,6 +543,22 @@ export default function Page() {
 
         </div>
       </div>
+      {quitAsk && live && (
+        <Modal>
+          <h3 className="section-title" style={{ fontSize: "calc(18px * var(--fs))" }}>Quit this game?</h3>
+          <p className="subtle" style={{ marginTop: 0 }}>
+            The game in progress will be discarded and nothing will be saved to stats.
+          </p>
+          <div className="row" style={{ marginTop: 16 }}>
+            <button className="btn" style={{ flex: 1 }} onClick={() => setQuitAsk(false)} autoFocus>
+              Keep Playing
+            </button>
+            <button className="btn btn-danger" style={{ flex: 1 }} onClick={quit}>
+              Quit Game
+            </button>
+          </div>
+        </Modal>
+      )}
       <nav className="nav">
         <button className={`navbtn ${view === "home" ? "active" : ""}`} onClick={() => setView("home")}>Home</button>
         <button className={`navbtn ${view === "setup" || ALL_PLAY_VIEWS.includes(view) ? "active" : ""}`} onClick={goPlay}>Play{live ? " ●" : ""}</button>
